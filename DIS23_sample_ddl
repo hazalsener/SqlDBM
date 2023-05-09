@@ -190,11 +190,6 @@ SELECT
     ORDER BY cust_level ASC
 )  
 
-, early_supporters as (
-
--- the first five customers who believed in us
-    SELECT $1 AS customer_id FROM VALUES (349642), (896215) , (350965) , (404707), (509986)
-)
 
 , all_loyalty AS (
 
@@ -203,30 +198,9 @@ SELECT
 		, loyalty_level
 		, 'top 400' as type
 	FROM business_logic 
-	
-	UNION ALL
-	
-	select 
-		 customer_id
-		, 'Gold' AS loyalty_level
-		, 'early supporter' AS type
-	FROM early_supporters
 )
-
-, rename AS (
-
-	SELECT 
-	  customer_id 
-	, loyalty_level AS level 
-	, type
-    , 0 AS points_amount --will be updated by marketing team
-	, '' AS comments
-	 FROM all_loyalty
-
-)
-
 
 SELECT * 
-FROM rename 
+FROM all_loyalty
 WHERE true
 ;
