@@ -1,203 +1,4 @@
--- ************************************** part
 CREATE  TABLE part
-(
- part_id          number(38,0) NOT NULL,
- name             varchar NOT NULL,
- manufacturer     varchar NOT NULL,
- brand            varchar NOT NULL,
- type             varchar NOT NULL,
- size_centimeters number(38,0) NOT NULL,
- container        varchar NOT NULL,
- retail_price_usd number(12,2) NOT NULL,
- comment          varchar COMMENT 'varchar COMMENT ''VARCHAR(23)'
-)
-COMMENT = 'Parts we distribute';
-
--- ************************************** location
-CREATE  TABLE location
-(
- location_id number(38,0) NOT NULL,
- name        varchar(25) NOT NULL,
- region_id   number(38,0) NOT NULL,
- comment     varchar(152) COMMENT 'varchar(152) COMMENT ''VARCHAR(152)',
- CONSTRAINT pk_location PRIMARY KEY ( location_id) RELY,
- CONSTRAINT ak_location_name UNIQUE ( name ) RELY
-)
-COMMENT = 'location assigned to 
-customer or supplier';
-
--- ************************************** supplier
-CREATE  TABLE supplier
-(
- supplier_id         number(38,0) NOT NULL,
- name                varchar NOT NULL,
- address             varchar NOT NULL,
- location_id         number(38,0) NOT NULL,
- phone               varchar NOT NULL,
- account_balance_usd number(12,2) NOT NULL,
- comment             varchar COMMENT 'varchar COMMENT ''VARCHAR(101)',
- CONSTRAINT pk_supplier PRIMARY KEY ( supplier_id ) RELY,
- CONSTRAINT FK_SUPPLIER_BASED_IN_LOCATION FOREIGN KEY ( location_id ) REFERENCES location ( location_id ) RELY
-)
-COMMENT = 'Suppliers who we buy from';
-
--- ************************************** customer
-CREATE  TABLE customer
-(
- customer_id         number(38,0) NOT NULL,
- name                varchar NOT NULL,
- address             varchar NOT NULL,
- location_id         number(38,0) NOT NULL,
- phone               varchar(15) NOT NULL,
- account_balance_usd number(12,2) NOT NULL,
- market_segment      varchar(10) NOT NULL,
- comment             varchar COMMENT 'varchar COMMENT ''VARCHAR(117)',
-
- CONSTRAINT pk_customer PRIMARY KEY ( customer_id ) RELY,
- CONSTRAINT FK_CUSTOMER_BASED_IN_LOCATION FOREIGN KEY ( location_id ) REFERENCES location ( location_id ) RELY
-)
-COMMENT = 'Registered cusotmers';
-
--- ************************************** sales_order
-CREATE  TABLE sales_order
-(
- sales_order_id  number(38,0) NOT NULL,
- customer_id     number(38,0) NOT NULL,
- order_status    varchar(1),
- total_price_usd number(12,2),
- order_date      date,
- order_priority  varchar(15),
- clerk           varchar(15),
- ship_priority   number(38,0),
- comment         varchar(79) COMMENT 'varchar(79) COMMENT ''VARCHAR(79)',
-
- CONSTRAINT pk_sales_order PRIMARY KEY ( sales_order_id ) RELY,
- CONSTRAINT FK_SALES_ORDER_PLACED_BY_CUSTOMER FOREIGN KEY ( customer_id ) REFERENCES customer ( customer_id ) RELY
-)
-COMMENT = 'single order per customer';
-
-
-
--- ************************************** inventory
-CREATE  TABLE inventory
-(
- part_id           number(38,0) NOT NULL COMMENT 'part of unique identifier with ps_suppkey',
- supplier_id       number(38,0) NOT NULL COMMENT 'part of unique identifier with ps_partkey',
- available_amount  number(38,0) NOT NULL COMMENT 'number of parts available for sale',
- supplier_cost_usd number(12,2) NOT NULL COMMENT 'original cost paid to supplier',
- comment           varchar() COMMENT 'varchar(79) COMMENT ''VARCHAR(79)',
-
- CONSTRAINT pk_inventory PRIMARY KEY ( part_id, supplier_id ) RELY,
- CONSTRAINT FK_INVENTORY_SUPPLIED_BY_SUPPLIER FOREIGN KEY ( supplier_id ) REFERENCES supplier ( supplier_id ) RELY
-)
-COMMENT = 'Warehouse Inventory';
-
--- ************************************** lineitem
-CREATE  TABLE lineitem
-(
- line_number        number(38,0) NOT NULL,
- sales_order_id     number(38,0) NOT NULL,
- part_id            number(38,0) NOT NULL,
- supplier_id        number(38,0) NOT NULL,
- quantity           number(12,2),
- extended_price_usd number(12,2),
- discount_percent   number(12,2),
- tax_percent        number(12,2),
- return_flag        varchar(1),
- line_status        varchar(1),
- ship_date          date,
- commit_date        date,
- receipt_date       date,
- ship_instructions  varchar(25),
- ship_mode          varchar(10),
- comment            varchar(44) COMMENT 'varchar(44) COMMENT ''VARCHAR(44)',
-
- CONSTRAINT pk_lineitem PRIMARY KEY ( line_number, sales_order_id ) RELY,
- CONSTRAINT FK_LINEITEM_CONSISTS_OF_SALES_ORDER FOREIGN KEY ( sales_order_id ) REFERENCES sales_order ( sales_order_id ) RELY,
- CONSTRAINT FK_LINEITEM_SUPPLIED_BY_SUPPLIER FOREIGN KEY ( supplier_id ) REFERENCES supplier ( supplier_id ) RELY
-)
-COMMENT = 'various line items per order';
-
-
--- ************************************** loyalty_customer_v
-
-Create View loyalty_customer_v
-
-  Comment = 'client loyalty program with gold, silver, bronze status'
-
-AS
-
-WITH cust AS (
-
-SELECT
-        customer_id,
-        name,
-        address,
-        location_id,
-        phone,
-        account_balance_usd,
-        market_segment,
-        comment
-    FROM
-        customer
-
-)
-
-, ord AS (
-
-    SELECT
-        sales_order_id,
-        customer_id,
-        order_status,
-        total_price_usd,
-        order_date,
-        order_priority,
-        clerk,
-        ship_priority,
-        comment
-    FROM
-        sales_order 
-)
-
-, cust_ord as ( 
-
-    SELECT customer_id, sum(total_price_usd) as total_price_usd FROM (
-            SELECT  o.customer_id, o.total_price_usd
-            FROM ord o 
-            INNER JOIN cust c 
-            ON o.customer_id = c.customer_id
-            WHERE TRUE
-            	AND account_balance_usd > 0 --no deadbeats 
-            	AND  location_id != 22 -- Excluding Russia from loyalty program will send strong message to Putin
-    )
-    GROUP BY customer_id
-)
-
-, business_logic AS (
-    SELECT *
-
-	    , DENSE_RANK() OVER  ( ORDER BY total_price_usd DESC ) AS  cust_level
-	  
-	    , CASE 
-	        WHEN   cust_level BETWEEN 1 AND 20 THEN 'Gold'
-	        WHEN   cust_level BETWEEN 21 AND 100 THEN 'Silver'
-	        WHEN   cust_level BETWEEN 101 AND 400 THEN 'Bronze'
-	               END AS loyalty_level
-
-    FROM cust_ord
-    WHERE TRUE 
-    QUALIFY cust_level <= 400
-    ORDER BY cust_level ASC
-)  
-
-
-, all_loyalty AS (
-
-	SELECT
-		 customer_id
-		, loyalty_level
-		, 'top 400' as type
-	CREATE  TABLE part
 (
  part_id          number(38,0) NOT NULL,
  name             varchar NOT NULL,
@@ -337,7 +138,7 @@ SELECT
         market_segment,
         comment
     FROM
-        dis23.customer
+        customer
 
 )
 
@@ -354,7 +155,7 @@ SELECT
         ship_priority,
         comment
     FROM
-        dis23.sales_order 
+       sales_order 
 )
 
 , cust_ord as ( 
@@ -397,13 +198,6 @@ SELECT
 		, 'top 400' as type
         , 0 AS points_amount --will be updated by marketing team
         , '' AS comments
-	FROM business_logic 
-)
-
-SELECT * 
-FROM all_loyalty
-WHERE true
-;
 	FROM business_logic 
 )
 
