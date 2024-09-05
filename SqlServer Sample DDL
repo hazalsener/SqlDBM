@@ -135,3 +135,35 @@ AS SELECT *
 NULL;
 GO
 
+CREATE TABLE dbo.SalesSummary (
+    product_id INT PRIMARY KEY,          -- Unique identifier for each product
+    sale_count BIGINT NOT NULL,          -- Total number of sales for the product
+    total_sales DECIMAL(18, 2) NOT NULL  -- Sum of all sales amounts for the product
+);
+
+CREATE VIEW dbo.sales_data_v
+WITH SCHEMABINDING
+AS
+SELECT 
+    s.product_id,
+    COUNT_BIG(*) AS sale_count,  -- Required for indexed views
+    SUM(s.sale_amount) AS total_sales
+FROM 
+    dbo.sales_data s
+GROUP BY 
+    s.product_id;
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_SalesSummary
+ON dbo.SalesSummary (product_id);
+GO
+
+CREATE TABLE dbo.sales_data (
+    sale_id INT PRIMARY KEY IDENTITY(1,1),   -- Unique identifier for each sale
+    product_id INT NOT NULL,                 -- References the product sold
+    customer_id INT NOT NULL,                -- References the customer who made the purchase
+    sale_amount DECIMAL(18, 2) NOT NULL,     -- The monetary amount of the sale
+    sale_date DATE NOT NULL,                 -- The date of the sale
+);
+
+
