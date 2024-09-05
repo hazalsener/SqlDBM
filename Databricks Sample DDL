@@ -1,0 +1,300 @@
+-- Managed Table 1
+CREATE TABLE IF NOT EXISTS sales_data (
+    sale_id STRING PRIMARY KEY,
+    product_id STRING,
+    customer_id STRING,
+    sale_amount DECIMAL(10, 2) NOT NULL,
+    sale_date DATE,
+    CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES product_data(product_id),
+    CONSTRAINT fk_customer FOREIGN KEY (customer_id) REFERENCES customer_data(customer_id)
+);
+
+-- Managed Table 2
+CREATE TABLE IF NOT EXISTS customer_data (
+    customer_id STRING PRIMARY KEY,
+    customer_name STRING NOT NULL,
+    customer_email STRING,
+    customer_phone STRING
+);
+
+-- Managed Table 3
+CREATE TABLE IF NOT EXISTS product_data (
+    product_id STRING PRIMARY KEY,
+    product_name STRING NOT NULL,
+    product_category STRING,
+    price DECIMAL(10, 2)
+);
+
+-- Managed Table 4
+CREATE TABLE IF NOT EXISTS order_data (
+    order_id STRING PRIMARY KEY,
+    customer_id STRING,
+    order_date DATE,
+    total_amount DECIMAL(10, 2),
+    CONSTRAINT fk_order_customer FOREIGN KEY (customer_id) REFERENCES customer_data(customer_id)
+);
+
+-- Managed Table 5
+CREATE TABLE IF NOT EXISTS inventory_data (
+    inventory_id STRING PRIMARY KEY,
+    product_id STRING,
+    stock_quantity INT,
+    warehouse_location STRING,
+    CONSTRAINT fk_inventory_product FOREIGN KEY (product_id) REFERENCES product_data(product_id)
+);
+
+-- Managed Table 6: Payment Data
+CREATE TABLE IF NOT EXISTS payment_data (
+    payment_id STRING PRIMARY KEY,
+    order_id STRING,
+    payment_date DATE,
+    payment_amount DECIMAL(10, 2),
+    payment_method STRING,
+    CONSTRAINT fk_payment_order FOREIGN KEY (order_id) REFERENCES order_data(order_id)
+);
+
+-- Managed Table 7: Shipment Data
+CREATE TABLE IF NOT EXISTS shipment_data (
+    shipment_id STRING PRIMARY KEY,
+    order_id STRING,
+    shipment_date DATE,
+    shipment_method STRING,
+    tracking_number STRING,
+    CONSTRAINT fk_shipment_order FOREIGN KEY (order_id) REFERENCES order_data(order_id)
+);
+
+-- Managed Table 8: Supplier Data
+CREATE TABLE IF NOT EXISTS supplier_data (
+    supplier_id STRING PRIMARY KEY,
+    supplier_name STRING NOT NULL,
+    supplier_contact STRING,
+    supplier_email STRING
+);
+
+-- Managed Table 9: Purchase Order Data
+CREATE TABLE IF NOT EXISTS purchase_order_data (
+    po_id STRING PRIMARY KEY,
+    supplier_id STRING,
+    order_date DATE,
+    total_amount DECIMAL(10, 2),
+    CONSTRAINT fk_po_supplier FOREIGN KEY (supplier_id) REFERENCES supplier_data(supplier_id)
+);
+
+-- Managed Table 10: Warehouse Data
+CREATE TABLE IF NOT EXISTS warehouse_data (
+    warehouse_id STRING PRIMARY KEY,
+    warehouse_name STRING NOT NULL,
+    warehouse_location STRING
+);
+
+-- Managed Table 11: Warehouse Inventory Data
+CREATE TABLE IF NOT EXISTS warehouse_inventory (
+    warehouse_inventory_id STRING PRIMARY KEY,
+    warehouse_id STRING,
+    product_id STRING,
+    stock_quantity INT,
+    CONSTRAINT fk_warehouse FOREIGN KEY (warehouse_id) REFERENCES warehouse_data(warehouse_id),
+    CONSTRAINT fk_warehouse_product FOREIGN KEY (product_id) REFERENCES product_data(product_id)
+);
+
+-- Managed Table 12: Discount Data
+CREATE TABLE IF NOT EXISTS discount_data (
+    discount_id STRING PRIMARY KEY,
+    product_id STRING,
+    discount_percentage DECIMAL(5, 2),
+    start_date DATE,
+    end_date DATE,
+    CONSTRAINT fk_discount_product FOREIGN KEY (product_id) REFERENCES product_data(product_id)
+);
+
+-- Managed Table 13: Return Data
+CREATE TABLE IF NOT EXISTS return_data (
+    return_id STRING PRIMARY KEY,
+    order_id STRING,
+    product_id STRING,
+    return_date DATE,
+    return_reason STRING,
+    CONSTRAINT fk_return_order FOREIGN KEY (order_id) REFERENCES order_data(order_id),
+    CONSTRAINT fk_return_product FOREIGN KEY (product_id) REFERENCES product_data(product_id)
+);
+
+-- Managed Table 14: Customer Feedback Data
+CREATE TABLE IF NOT EXISTS customer_feedback (
+    feedback_id STRING PRIMARY KEY,
+    customer_id STRING,
+    order_id STRING,
+    feedback_date DATE,
+    rating INT,
+    comments STRING,
+    CONSTRAINT fk_feedback_customer FOREIGN KEY (customer_id) REFERENCES customer_data(customer_id),
+    CONSTRAINT fk_feedback_order FOREIGN KEY (order_id) REFERENCES order_data(order_id)
+);
+
+-- Managed Table 15: Employee Data
+CREATE TABLE IF NOT EXISTS employee_data (
+    employee_id STRING PRIMARY KEY,
+    employee_name STRING,
+    employee_position STRING,
+    hire_date DATE,
+    salary DECIMAL(10, 2)
+);
+
+-- Managed Table 16: Employee Sales Performance Data
+CREATE TABLE IF NOT EXISTS employee_sales_performance (
+    performance_id STRING PRIMARY KEY,
+    employee_id STRING,
+    sale_id STRING,
+    performance_score DECIMAL(5, 2),
+    performance_date DATE,
+    CONSTRAINT fk_performance_employee FOREIGN KEY (employee_id) REFERENCES employee_data(employee_id),
+    CONSTRAINT fk_performance_sale FOREIGN KEY (sale_id) REFERENCES sales_data(sale_id)
+);
+
+CREATE VIEW IF NOT EXISTS product_inventory_status AS
+SELECT 
+    p.product_id, 
+    p.product_name, 
+    w.warehouse_name, 
+    wi.stock_quantity
+FROM 
+    product_data p
+JOIN 
+    warehouse_inventory wi ON p.product_id = wi.product_id
+JOIN 
+    warehouse_data w ON wi.warehouse_id = w.warehouse_id;
+
+
+CREATE VIEW IF NOT EXISTS employee_sales_performance_summary AS
+SELECT 
+    e.employee_id, 
+    e.employee_name, 
+    COUNT(sp.sale_id) AS total_sales_handled, 
+    AVG(sp.performance_score) AS average_performance_score
+FROM 
+    employee_data e
+JOIN 
+    employee_sales_performance sp ON e.employee_id = sp.employee_id
+GROUP BY 
+    e.employee_id, e.employee_name;
+CREATE VIEW IF NOT EXISTS customer_order_history AS
+SELECT 
+    c.customer_id, 
+    c.customer_name, 
+    o.order_id, 
+    o.order_date, 
+    o.total_amount
+FROM 
+    customer_data c
+JOIN 
+    order_data o ON c.customer_id = o.customer_id;
+CREATE VIEW IF NOT EXISTS total_sales_by_product AS
+SELECT 
+    p.product_id, 
+    p.product_name, 
+    SUM(s.sale_amount) AS total_sales
+FROM 
+    product_data p
+JOIN 
+    sales_data s ON p.product_id = s.product_id
+GROUP BY 
+    p.product_id, p.product_name;
+
+CREATE TABLE IF NOT EXISTS external_supplier_data (
+    supplier_id STRING PRIMARY KEY,
+    supplier_name STRING NOT NULL,
+    supplier_contact STRING,
+    supplier_email STRING
+)
+USING DELTA
+LOCATION 'dbfs:/mnt/external/supplier_data/';
+
+CREATE TABLE IF NOT EXISTS external_product_data (
+    product_id STRING PRIMARY KEY,
+    supplier_id STRING,
+    product_name STRING NOT NULL,
+    product_category STRING,
+    price DECIMAL(10, 2),
+    CONSTRAINT fk_supplier FOREIGN KEY (supplier_id) REFERENCES external_supplier_data(supplier_id)
+)
+USING DELTA
+LOCATION 'dbfs:/mnt/external/product_data/';
+
+CREATE TABLE IF NOT EXISTS external_purchase_order_data (
+    po_id STRING ,
+    supplier_id STRING,
+    order_date DATE,
+    total_amount DECIMAL(10, 2),
+    CONSTRAINT fk_po_supplier FOREIGN KEY (supplier_id) REFERENCES external_supplier_data(supplier_id)
+)
+USING DELTA
+LOCATION 'dbfs:/mnt/external/purchase_order_data/';
+CREATE TABLE IF NOT EXISTS external_customer_data (
+    customer_id STRING PRIMARY KEY,
+    customer_name STRING NOT NULL,
+    customer_email STRING,
+    customer_phone STRING
+)
+USING DELTA
+LOCATION 'dbfs:/mnt/external/customer_data/';
+CREATE TABLE IF NOT EXISTS external_sales_data (
+    sale_id STRING PRIMARY KEY,
+    customer_id STRING,
+    product_id STRING,
+    sale_amount DECIMAL(10, 2),
+    sale_date DATE,
+    CONSTRAINT fk_sales_customer FOREIGN KEY (customer_id) REFERENCES external_customer_data(customer_id),
+    CONSTRAINT fk_sales_product FOREIGN KEY (product_id) REFERENCES external_product_data(product_id)
+)
+USING DELTA
+LOCATION 'dbfs:/mnt/external/sales_data/';
+
+CREATE VIEW IF NOT EXISTS total_sales_by_supplier AS
+SELECT 
+    s.supplier_id, 
+    s.supplier_name, 
+    SUM(es.sale_amount) AS total_sales
+FROM 
+    external_supplier_data s
+JOIN 
+    external_product_data ep ON s.supplier_id = ep.supplier_id
+JOIN 
+    external_sales_data es ON ep.product_id = es.product_id
+GROUP BY 
+    s.supplier_id, s.supplier_name;
+
+CREATE VIEW IF NOT EXISTS customer_purchase_history AS
+SELECT 
+    c.customer_id, 
+    c.customer_name, 
+    es.sale_id, 
+    ep.product_name, 
+    es.sale_amount, 
+    es.sale_date
+FROM 
+    external_customer_data c
+JOIN 
+    external_sales_data es ON c.customer_id = es.customer_id
+JOIN 
+    external_product_data ep ON es.product_id = ep.product_id;
+CREATE VIEW IF NOT EXISTS purchase_orders_by_supplier AS
+SELECT 
+    po.po_id, 
+    s.supplier_name, 
+    po.order_date, 
+    po.total_amount
+FROM 
+    external_purchase_order_data po
+JOIN 
+    external_supplier_data s ON po.supplier_id = s.supplier_id;
+
+CREATE VIEW IF NOT EXISTS purchase_orders_by_supplier AS
+SELECT 
+    po.po_id, 
+    s.supplier_name, 
+    po.order_date, 
+    po.total_amount
+FROM 
+    external_purchase_order_data po
+JOIN 
+    external_supplier_data s ON po.supplier_id = s.supplier_id;
+
