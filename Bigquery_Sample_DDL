@@ -1,0 +1,74 @@
+-- Create Retailer table
+CREATE TABLE `your_project.your_dataset.Retailer` (
+    retailer_id INT64 NOT NULL PRIMARY KEY NOT ENFORCED,
+    retailer_name STRING
+);
+
+-- Create Banner table
+CREATE TABLE `your_project.your_dataset.Banner` (
+    banner_id INT64 NOT NULL PRIMARY KEY NOT ENFORCED,
+    banner_name STRING,
+    retailer_id INT64 NOT NULL REFERENCES `your_project.your_dataset.Retailer`(retailer_id) NOT ENFORCED
+);
+
+-- Create Fulfillment table (Partitioned by fulfillment_date)
+CREATE TABLE `your_project.your_dataset.Fulfillment` (
+    fulfillment_id INT64 NOT NULL PRIMARY KEY NOT ENFORCED,
+    fulfillment_type STRING,
+    banner_id INT64 NOT NULL REFERENCES `your_project.your_dataset.Banner`(banner_id) NOT ENFORCED,
+    fulfillment_date DATE NOT NULL,  -- Partitioning key
+    delivery_addresses ARRAY<STRUCT<address STRING, city STRING, postal_code STRING>>  -- ARRAY of STRUCT
+)
+PARTITION BY fulfillment_date;
+
+-- Create Slot table (Clustered by fulfillment_id and slot_time_start)
+CREATE TABLE `your_project.your_dataset.Slot` (
+    slot_id INT64 NOT NULL PRIMARY KEY NOT ENFORCED,
+    slot_time_start TIMESTAMP,
+    slot_time_end TIMESTAMP,
+    fulfillment_id INT64 NOT NULL REFERENCES `your_project.your_dataset.Fulfillment`(fulfillment_id) NOT ENFORCED,
+    available_times ARRAY<TIMESTAMP>  -- ARRAY of TIMESTAMP
+)
+CLUSTER BY fulfillment_id, slot_time_start;
+
+-- Create Shipment table
+CREATE TABLE `your_project.your_dataset.Shipment` (
+    shipment_id INT64 NOT NULL PRIMARY KEY NOT ENFORCED,
+    shipment_date TIMESTAMP,
+    slot_id INT64 NOT NULL REFERENCES `your_project.your_dataset.Slot`(slot_id) NOT ENFORCED,
+    items ARRAY<STRUCT<item_id INT64, quantity INT64>>  -- ARRAY of STRUCT
+);
+
+-- Create Delivery table
+CREATE TABLE `your_project.your_dataset.Delivery` (
+    delivery_id INT64 NOT NULL PRIMARY KEY NOT ENFORCED,
+    shipment_id INT64 NOT NULL REFERENCES `your_project.your_dataset.Shipment`(shipment_id) NOT ENFORCED,
+    delivery_status STRING,
+    delivery_date TIMESTAMP,
+    delivery_updates ARRAY<STRUCT<update_time TIMESTAMP, status STRING>>  -- ARRAY of STRUCT
+);
+
+-- Create DeliveryBusinessProcess table
+CREATE TABLE `your_project.your_dataset.DeliveryBusinessProcess` (
+    process_id INT64 NOT NULL PRIMARY KEY NOT ENFORCED,
+    retailer_id INT64 NOT NULL REFERENCES `your_project.your_dataset.Retailer`(retailer_id) NOT ENFORCED,
+    delivery_id INT64 NOT NULL REFERENCES `your_project.your_dataset.Delivery`(delivery_id) NOT ENFORCED,
+    process_status STRING,
+    process_timestamp TIMESTAMP,
+    process_notes ARRAY<STRING>  -- ARRAY of STRING
+);
+
+-- Create a view to join Shipment, Slot, and Delivery tables
+CREATE VIEW `your_project.your_dataset.ShipmentDeliveryView` AS
+SELECT 
+    sh.shipment_id,
+    sh.shipment_date,
+    s.slot_time_start,
+    s.slot_time_end,
+    d.delivery_id,
+    d.delivery_status,
+    d.delivery_date,
+    d.delivery_updates  -- Include delivery updates from Delivery table
+FROM `your_project.your_dataset.Shipment` sh
+JOIN `your_project.your_dataset.Slot` s ON sh.slot_id = s.slot_id
+JOIN `your_project.your_dataset.Delivery` d ON sh.shipment_id = d.shipment_id;
