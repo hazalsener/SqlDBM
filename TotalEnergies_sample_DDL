@@ -1,0 +1,414 @@
+-- ************************************** operations.warehouse
+CREATE TABLE operations.warehouse
+(
+ warehouse_id   bigint NOT NULL CONSTRAINT PK_warehouse PRIMARY KEY,
+ warehouse_name string COMMENT 'Name of the warehouse',
+ location       string COMMENT 'Physical location of the warehouse',
+ capacity       int COMMENT 'Total storage capacity of the warehouse',
+ manager_name   string COMMENT 'Name of the warehouse manager',
+ contact_info   string COMMENT 'Contact information for the warehouse',
+ created_by     varchar(50) NOT NULL,
+ created_date   timestamp NOT NULL
+)
+USING DELTA
+ COMMENT 'Tracks details of warehouses'
+ TBLPROPERTIES (delta.checkpoint.writeStatsAsJson = false, delta.minReaderVersion = 1, delta.minWriterVersion = 2);
+
+
+
+-- ************************************** operations.supply_chain
+CREATE TABLE operations.supply_chain
+(
+ supply_chain_id bigint NOT NULL CONSTRAINT PK_supply_chain PRIMARY KEY,
+ supplier_id     bigint COMMENT 'Supplier identifier',
+ product_id      bigint COMMENT 'Product identifier',
+ logistics_cost  decimal(18, 2) COMMENT 'Total logistics cost for the supply chain',
+ lead_time_days  int COMMENT 'Lead time in days',
+ inventory_level int COMMENT 'Current inventory level for the product',
+ region          string COMMENT 'Region of operation',
+ created_by      varchar(50) NOT NULL,
+ created_date    timestamp NOT NULL
+)
+USING DELTA
+ COMMENT 'Tracks supply chain logistics and inventory data'
+ TBLPROPERTIES (delta.checkpoint.writeStatsAsJson = false, delta.minReaderVersion = 1, delta.minWriterVersion = 2);
+
+
+
+-- ************************************** equity.share_tracking
+CREATE TABLE equity.share_tracking
+(
+ share_id           bigint NOT NULL CONSTRAINT PK_share_tracking PRIMARY KEY,
+ outstanding_shares bigint COMMENT 'Number of shares outstanding',
+ buyback_shares     bigint COMMENT 'Shares bought back',
+ eps_change         decimal(18, 2) COMMENT 'Change in EPS',
+ buyback_date       date COMMENT 'Date of buyback activity',
+ created_by         varchar(50) NOT NULL,
+ created_date       timestamp NOT NULL
+)
+USING DELTA
+ COMMENT 'Tracks buyback activities and impacts'
+ TBLPROPERTIES (delta.checkpoint.writeStatsAsJson = false, delta.minReaderVersion = 1, delta.minWriterVersion = 2);
+
+
+
+-- ************************************** operations.procurement
+CREATE TABLE operations.procurement
+(
+ procurement_id   bigint NOT NULL CONSTRAINT PK_procurement PRIMARY KEY,
+ supplier_id      bigint COMMENT 'Supplier identifier',
+ product_id       bigint COMMENT 'Procured product identifier',
+ purchase_order   string COMMENT 'Purchase order number',
+ purchase_date    date COMMENT 'Date of purchase',
+ procurement_cost decimal(18, 2) COMMENT 'Cost of the procurement',
+ delivery_status  string COMMENT 'Delivery status (e.g., Delivered, In Transit, Pending)',
+ created_by       varchar(50) NOT NULL,
+ created_date     timestamp NOT NULL
+)
+USING DELTA
+ COMMENT 'Tracks procurement activities for operations'
+ TBLPROPERTIES (delta.checkpoint.writeStatsAsJson = false, delta.minReaderVersion = 1, delta.minWriterVersion = 2);
+
+
+
+-- ************************************** financial.performance_revenue
+CREATE TABLE financial.performance_revenue
+(
+ revenue_id     bigint NOT NULL CONSTRAINT PK_performance_revenue PRIMARY KEY,
+ business_unit  string COMMENT 'Business unit',
+ geography      string COMMENT 'Geographic location',
+ revenue_amount decimal(18, 2) COMMENT 'Total revenue',
+ expense_amount decimal(18, 2) COMMENT 'Total expenses',
+ net_income     decimal(18, 2) COMMENT 'Net income',
+ reporting_date date COMMENT 'Reporting date',
+ created_by     varchar(50) NOT NULL,
+ created_date   timestamp NOT NULL
+)
+USING DELTA
+ COMMENT 'Tracks revenue, expenses, and net income'
+ TBLPROPERTIES (delta.checkpoint.writeStatsAsJson = false, delta.minReaderVersion = 1, delta.minWriterVersion = 2);
+
+
+
+-- ************************************** operations.inventory_management
+CREATE TABLE operations.inventory_management
+(
+ inventory_id    bigint NOT NULL CONSTRAINT PK_inventory_management PRIMARY KEY,
+ product_id      bigint COMMENT 'Product identifier',
+ current_stock   int COMMENT 'Current stock level',
+ reorder_level   int COMMENT 'Reorder level for the product',
+ stock_valuation decimal(18, 2) COMMENT 'Valuation of current stock',
+ warehouse_id    bigint COMMENT 'Identifier of the warehouse where stock is located',
+ updated_by      varchar(50) NOT NULL,
+ updated_date    timestamp NOT NULL
+)
+USING DELTA
+ COMMENT 'Tracks inventory levels and stock valuations'
+ TBLPROPERTIES (delta.checkpoint.writeStatsAsJson = false, delta.minReaderVersion = 1, delta.minWriterVersion = 2);
+
+
+
+-- ************************************** sustainability.carbon_tracking
+CREATE TABLE sustainability.carbon_tracking
+(
+ carbon_id        bigint NOT NULL CONSTRAINT PK_carbon_tracking PRIMARY KEY,
+ scope_1_emission decimal(18, 2) COMMENT 'Scope 1 emissions (direct)',
+ scope_2_emission decimal(18, 2) COMMENT 'Scope 2 emissions (indirect energy)',
+ scope_3_emission decimal(18, 2) COMMENT 'Scope 3 emissions (supply chain)',
+ reporting_year   int COMMENT 'Year of report',
+ created_by       varchar(50) NOT NULL,
+ created_date     timestamp NOT NULL
+)
+USING DELTA
+ COMMENT 'Tracks emissions data for sustainability goals'
+ TBLPROPERTIES (delta.checkpoint.writeStatsAsJson = false, delta.minReaderVersion = 1, delta.minWriterVersion = 2);
+
+
+
+-- ************************************** operations.asset_management
+CREATE TABLE operations.asset_management
+(
+ asset_id           bigint NOT NULL CONSTRAINT PK_asset_management PRIMARY KEY,
+ asset_name         string COMMENT 'Name of the asset',
+ asset_type         string COMMENT 'Type of the asset (e.g., equipment, vehicle, software)',
+ acquisition_cost   decimal(18, 2) COMMENT 'Cost to acquire the asset',
+ maintenance_cost   decimal(18, 2) COMMENT 'Maintenance cost of the asset',
+ roi_percentage     decimal(5, 2) COMMENT 'Return on investment percentage',
+ operational_status string COMMENT 'Current operational status (e.g., Active, Maintenance, Decommissioned)',
+ created_by         varchar(50) NOT NULL,
+ created_date       timestamp NOT NULL
+)
+USING DELTA
+ COMMENT 'Tracks performance, maintenance, and ROI of assets'
+ TBLPROPERTIES (delta.checkpoint.writeStatsAsJson = false, delta.minReaderVersion = 1, delta.minWriterVersion = 2);
+
+
+
+-- ************************************** sustainability.water_usage
+CREATE TABLE sustainability.water_usage
+(
+ water_id          bigint NOT NULL CONSTRAINT PK_water_usage PRIMARY KEY,
+ carbon_id         bigint NOT NULL CONSTRAINT FK_water_carbon REFERENCES sustainability.carbon_tracking,
+ facility_name     string COMMENT 'Facility name',
+ water_consumption decimal(18, 2) COMMENT 'Water consumption in cubic meters',
+ reduction_target  decimal(18, 2) COMMENT 'Targeted reduction in water usage',
+ reporting_year    int COMMENT 'Year of report',
+ created_by        varchar(50) NOT NULL,
+ created_date      timestamp NOT NULL
+)
+USING DELTA
+ COMMENT 'Tracks water usage and reduction goals'
+ TBLPROPERTIES (delta.checkpoint.writeStatsAsJson = false, delta.minReaderVersion = 1, delta.minWriterVersion = 2);
+
+
+
+-- ************************************** sustainability.waste_management
+CREATE TABLE sustainability.waste_management
+(
+ waste_id        bigint NOT NULL CONSTRAINT PK_waste_management PRIMARY KEY,
+ facility_name   string COMMENT 'Facility name',
+ waste_type      string COMMENT 'Type of waste (e.g., hazardous, non-hazardous)',
+ waste_generated decimal(18, 2) COMMENT 'Waste generated in tons',
+ waste_recycled  decimal(18, 2) COMMENT 'Waste recycled in tons',
+ carbon_id       bigint NOT NULL CONSTRAINT FK_waste_carbon REFERENCES sustainability.carbon_tracking,
+ reporting_year  int COMMENT 'Year of report',
+ created_by      varchar(50) NOT NULL,
+ created_date    timestamp NOT NULL
+)
+USING DELTA
+ COMMENT 'Tracks waste generation and recycling metrics'
+ TBLPROPERTIES (delta.checkpoint.writeStatsAsJson = false, delta.minReaderVersion = 1, delta.minWriterVersion = 2);
+
+
+
+-- ************************************** sustainability.supplier_compliance
+CREATE TABLE sustainability.supplier_compliance
+(
+ supplier_id      bigint NOT NULL CONSTRAINT PK_supplier_compliance PRIMARY KEY,
+ supplier_name    string COMMENT 'Supplier name',
+ compliance_score decimal(5, 2) COMMENT 'Compliance score (0-100)',
+ carbon_id        bigint NOT NULL CONSTRAINT FK_supplier_carbon REFERENCES sustainability.carbon_tracking,
+ audit_date       date COMMENT 'Date of compliance audit',
+ created_by       varchar(50) NOT NULL,
+ created_date     timestamp NOT NULL
+)
+USING DELTA
+ COMMENT 'Tracks compliance scores of suppliers'
+ TBLPROPERTIES (delta.checkpoint.writeStatsAsJson = false, delta.minReaderVersion = 1, delta.minWriterVersion = 2);
+
+
+
+-- ************************************** equity.shareholders
+CREATE TABLE equity.shareholders
+(
+ shareholder_id   bigint NOT NULL CONSTRAINT PK_shareholders PRIMARY KEY,
+ name             string COMMENT 'Shareholder name',
+ share_id         bigint NOT NULL CONSTRAINT FK_shareholder_share REFERENCES equity.share_tracking,
+ holdings         bigint COMMENT 'Number of shares held',
+ acquisition_date date COMMENT 'Date of acquisition',
+ created_by       varchar(50) NOT NULL,
+ created_date     timestamp NOT NULL
+)
+USING DELTA
+ COMMENT 'Tracks shareholder information'
+ TBLPROPERTIES (delta.checkpoint.writeStatsAsJson = false, delta.minReaderVersion = 1, delta.minWriterVersion = 2);
+
+
+
+-- ************************************** equity.share_price
+CREATE TABLE equity.share_price
+(
+ price_id      bigint NOT NULL CONSTRAINT PK_share_price PRIMARY KEY,
+ share_id      bigint NOT NULL CONSTRAINT FK_share_price REFERENCES equity.share_tracking,
+ closing_price decimal(18, 2) COMMENT 'Closing price of the share',
+ date          date COMMENT 'Date of the price record',
+ created_by    varchar(50) NOT NULL,
+ created_date  timestamp NOT NULL
+)
+USING DELTA
+ COMMENT 'Tracks daily share prices'
+ TBLPROPERTIES (delta.checkpoint.writeStatsAsJson = false, delta.minReaderVersion = 1, delta.minWriterVersion = 2);
+
+
+
+-- ************************************** financial.performance_region
+CREATE TABLE financial.performance_region
+(
+ region_id      bigint NOT NULL CONSTRAINT PK_performance_region PRIMARY KEY,
+ region_name    string COMMENT 'Region name',
+ revenue_id     bigint NOT NULL CONSTRAINT FK_region_revenue REFERENCES financial.performance_revenue,
+ region_revenue decimal(18, 2) COMMENT 'Revenue by region',
+ created_by     varchar(50) NOT NULL,
+ created_date   timestamp NOT NULL
+)
+USING DELTA
+ COMMENT 'Tracks regional performance'
+ TBLPROPERTIES (delta.checkpoint.writeStatsAsJson = false, delta.minReaderVersion = 1, delta.minWriterVersion = 2);
+
+
+
+-- ************************************** financial.performance_metrics
+CREATE TABLE financial.performance_metrics
+(
+ metric_id        bigint NOT NULL CONSTRAINT PK_performance_metrics PRIMARY KEY,
+ revenue_id       bigint NOT NULL CONSTRAINT FK_metric_revenue REFERENCES financial.performance_revenue,
+ metric_name      string COMMENT 'Metric name (e.g., ROI, margin)',
+ metric_value     decimal(18, 2) COMMENT 'Value of the metric',
+ calculation_date date COMMENT 'Date of calculation',
+ created_by       varchar(50) NOT NULL,
+ created_date     timestamp NOT NULL
+)
+USING DELTA
+ COMMENT 'Consolidates key performance metrics'
+ TBLPROPERTIES (delta.checkpoint.writeStatsAsJson = false, delta.minReaderVersion = 1, delta.minWriterVersion = 2);
+
+
+
+-- ************************************** financial.performance_forecasting
+CREATE TABLE financial.performance_forecasting
+(
+ forecast_id      bigint NOT NULL CONSTRAINT PK_performance_forecasting PRIMARY KEY,
+ revenue_id       bigint NOT NULL CONSTRAINT FK_revenue_forecast REFERENCES financial.performance_revenue,
+ revenue_forecast decimal(18, 2) COMMENT 'Projected revenue',
+ expense_forecast decimal(18, 2) COMMENT 'Projected expenses',
+ forecast_period  string COMMENT 'Forecast period (e.g., Q1, 2025)',
+ created_by       varchar(50) NOT NULL,
+ created_date     timestamp NOT NULL
+)
+USING DELTA
+ COMMENT 'Provides predictive insights for financial planning'
+ TBLPROPERTIES (delta.checkpoint.writeStatsAsJson = false, delta.minReaderVersion = 1, delta.minWriterVersion = 2);
+
+
+
+-- ************************************** financial.performance_cost_allocation
+CREATE TABLE financial.performance_cost_allocation
+(
+ allocation_id   bigint NOT NULL CONSTRAINT PK_performance_cost_allocation PRIMARY KEY,
+ revenue_id      bigint NOT NULL CONSTRAINT FK_revenue REFERENCES financial.performance_revenue,
+ project_name    string COMMENT 'Project or initiative name',
+ allocated_cost  decimal(18, 2) COMMENT 'Allocated cost',
+ allocation_date date COMMENT 'Date of allocation',
+ created_by      varchar(50) NOT NULL,
+ created_date    timestamp NOT NULL
+)
+USING DELTA
+ COMMENT 'Allocates costs to projects or initiatives'
+ TBLPROPERTIES (delta.checkpoint.writeStatsAsJson = false, delta.minReaderVersion = 1, delta.minWriterVersion = 2);
+
+
+
+-- ************************************** operations.operational_risks
+CREATE TABLE operations.operational_risks
+(
+ risk_id           bigint NOT NULL CONSTRAINT PK_operational_risks PRIMARY KEY,
+ supply_chain_id   bigint NOT NULL CONSTRAINT FK_risk_supply_chain REFERENCES operations.supply_chain,
+ asset_id          bigint COMMENT 'Related asset identifier' CONSTRAINT FK_risk_asset REFERENCES operations.asset_management,
+ risk_description  string COMMENT 'Description of the risk',
+ risk_probability  decimal(5, 2) COMMENT 'Probability of risk occurring (percentage)',
+ risk_impact       string COMMENT 'Impact of the risk (e.g., High, Medium, Low)',
+ mitigation_plan   string COMMENT 'Mitigation strategy for the risk',
+ monitoring_status string COMMENT 'Current monitoring status (e.g., Ongoing, Resolved)',
+ created_by        varchar(50) NOT NULL,
+ created_date      timestamp NOT NULL,
+ warehouse_id      bigint NOT NULL CONSTRAINT FK_17 REFERENCES operations.warehouse,
+ inventory_id      bigint NOT NULL CONSTRAINT FK_18 REFERENCES operations.inventory_management,
+ procurement_id    bigint NOT NULL CONSTRAINT FK_19 REFERENCES operations.procurement
+)
+USING DELTA
+ COMMENT 'Tracks risks related to operations and supply chain'
+ TBLPROPERTIES (delta.checkpoint.writeStatsAsJson = false, delta.minReaderVersion = 1, delta.minWriterVersion = 2);
+
+
+
+-- ************************************** sustainability.green_initiatives
+CREATE TABLE sustainability.green_initiatives
+(
+ initiative_id   bigint NOT NULL CONSTRAINT PK_green_initiatives PRIMARY KEY,
+ initiative_name string COMMENT 'Green initiative name (e.g., Tree Planting Program)',
+ carbon_id       bigint NOT NULL CONSTRAINT FK_green_initiative_carbon REFERENCES sustainability.carbon_tracking,
+ initiative_cost decimal(18, 2) COMMENT 'Cost of initiative',
+ participants    int COMMENT 'Number of participants',
+ start_date      date COMMENT 'Initiative start date',
+ end_date        date COMMENT 'Initiative end date',
+ created_by      varchar(50) NOT NULL,
+ created_date    timestamp NOT NULL
+)
+USING DELTA
+ COMMENT 'Tracks sustainability-focused programs'
+ TBLPROPERTIES (delta.checkpoint.writeStatsAsJson = false, delta.minReaderVersion = 1, delta.minWriterVersion = 2);
+
+
+
+-- ************************************** sustainability.energy_transition
+CREATE TABLE sustainability.energy_transition
+(
+ transition_id       bigint NOT NULL CONSTRAINT PK_energy_transition PRIMARY KEY,
+ carbon_id           bigint NOT NULL CONSTRAINT FK_transition_carbon REFERENCES sustainability.carbon_tracking,
+ project_name        string COMMENT 'Clean energy project name',
+ investment_cost     decimal(18, 2) COMMENT 'Investment cost for the project',
+ roi                 decimal(18, 2) COMMENT 'Return on investment',
+ implementation_date date COMMENT 'Date of implementation',
+ created_by          varchar(50) NOT NULL,
+ created_date        timestamp NOT NULL
+)
+USING DELTA
+ COMMENT 'Tracks investment in renewable energy projects'
+ TBLPROPERTIES (delta.checkpoint.writeStatsAsJson = false, delta.minReaderVersion = 1, delta.minWriterVersion = 2);
+
+
+
+-- ************************************** sustainability.energy_efficiency
+CREATE TABLE sustainability.energy_efficiency
+(
+ efficiency_id   bigint NOT NULL CONSTRAINT PK_energy_efficiency PRIMARY KEY,
+ carbon_id       bigint NOT NULL CONSTRAINT FK_efficiency_carbon REFERENCES sustainability.carbon_tracking,
+ facility_name   string COMMENT 'Facility name',
+ energy_consumed decimal(18, 2) COMMENT 'Energy consumed in megawatt-hours (MWh)',
+ efficiency_rate decimal(5, 2) COMMENT 'Efficiency rate in percentage',
+ reporting_year  int COMMENT 'Year of report',
+ created_by      varchar(50) NOT NULL,
+ created_date    timestamp NOT NULL
+)
+USING DELTA
+ COMMENT 'Tracks energy consumption and efficiency improvements'
+ TBLPROPERTIES (delta.checkpoint.writeStatsAsJson = false, delta.minReaderVersion = 1, delta.minWriterVersion = 2);
+
+
+
+-- ************************************** equity.dividends
+CREATE TABLE equity.dividends
+(
+ dividend_id     bigint NOT NULL CONSTRAINT PK_dividends PRIMARY KEY,
+ share_id        bigint NOT NULL CONSTRAINT FK_dividend_share REFERENCES equity.share_tracking,
+ dividend_amount decimal(18, 2) COMMENT 'Dividend amount per share',
+ payout_date     date COMMENT 'Payout date',
+ created_by      varchar(50) NOT NULL,
+ created_date    timestamp NOT NULL
+)
+USING DELTA
+ COMMENT 'Tracks dividend payouts'
+ TBLPROPERTIES (delta.checkpoint.writeStatsAsJson = false, delta.minReaderVersion = 1, delta.minWriterVersion = 2);
+
+
+
+-- ************************************** sustainability.climate_goals
+CREATE TABLE sustainability.climate_goals
+(
+ goal_id         bigint NOT NULL CONSTRAINT PK_climate_goals PRIMARY KEY,
+ carbon_id       bigint NOT NULL CONSTRAINT FK_climate_goal_carbon REFERENCES sustainability.carbon_tracking,
+ goal_name       string COMMENT 'Climate goal (e.g., Net Zero by 2030)',
+ progress_status string COMMENT 'Status (e.g., On Track, Delayed)',
+ target_year     int COMMENT 'Year of goal achievement',
+ created_by      varchar(50) NOT NULL,
+ created_date    timestamp NOT NULL
+)
+USING DELTA
+ COMMENT 'Tracks progress towards organizational climate goals'
+ TBLPROPERTIES (delta.checkpoint.writeStatsAsJson = false, delta.minReaderVersion = 1, delta.minWriterVersion = 2);
+
+CREATE VIEW supplier_compliance_v
+COMMENT 'No Comment Provided'
+AS
+select * from sustainability.supplier_compliance;
+
