@@ -1,0 +1,127 @@
+-- 1. Create Schema
+CREATE SCHEMA IF NOT EXISTS demo.retail_analytics;
+
+-- 2. Managed Tables
+
+CREATE TABLE demo.retail_analytics.product (
+    product_id STRING PRIMARY KEY,
+    product_name STRING NOT NULL,
+    category STRING,
+    price DECIMAL(10,2),
+    available BOOLEAN
+);
+
+CREATE TABLE demo.retail_analytics.customer (
+    customer_id STRING PRIMARY KEY,
+    first_name STRING,
+    last_name STRING,
+    email STRING,
+    loyalty_member BOOLEAN
+);
+
+CREATE TABLE demo.retail_analytics.store (
+    store_id STRING PRIMARY KEY,
+    store_name STRING,
+    region STRING,
+    opening_date DATE
+);
+
+CREATE TABLE demo.retail_analytics.sale (
+    sale_id STRING PRIMARY KEY,
+    sale_date DATE,
+    product_id STRING,
+    customer_id STRING,
+    store_id STRING,
+    quantity INT,
+    total_amount DECIMAL(12,2),
+    FOREIGN KEY (product_id) REFERENCES demo.retail_analytics.product(product_id),
+    FOREIGN KEY (customer_id) REFERENCES demo.retail_analytics.customer(customer_id),
+    FOREIGN KEY (store_id) REFERENCES demo.retail_analytics.store(store_id)
+);
+
+-- 3. External Tables
+
+//* CREATE TABLE demo.retail_analytics.inventory_external (
+    store_id STRING,
+    product_id STRING,
+    quantity_available INT,
+    last_updated DATE
+)
+USING DELTA
+LOCATION 'abfss://external@datalake.dfs.core.windows.net/inventory/';
+
+CREATE TABLE demo.retail_analytics.shipment_external (
+    shipment_id STRING,
+    product_id STRING,
+    shipped_date DATE,
+    arrival_date DATE,
+    quantity INT
+)
+USING PARQUET
+LOCATION 'abfss://external@datalake.dfs.core.windows.net/shipments/'; *//
+
+CREATE TABLE demo.retail_analytics.web_session_external (
+    session_id STRING,
+    customer_id STRING,
+    visit_time TIMESTAMP,
+    source STRING
+)
+USING CSV
+OPTIONS ('header' = 'true')
+LOCATION 'abfss://external@datalake.dfs.core.windows.net/web_traffic/'; *//
+
+-- 4. Materialized Views
+
+CREATE or replace MATERIALIZED VIEW demo.retail_analytics.mv_daily_sale_summary
+AS
+SELECT
+    sale_date,
+    store_id,
+    SUM(total_amount) AS total_sales
+FROM retail_analytics.sale
+GROUP BY sale_date, store_id;
+
+CREATE MATERIALIZED VIEW demo.retail_analytics.mv_top_customer
+AS
+SELECT
+    customer_id,
+    SUM(total_amount) AS lifetime_value
+FROM demo.retail_analytics.sale
+GROUP BY customer_id;
+
+CREATE MATERIALIZED VIEW demo.retail_analytics.mv_low_stock_alert
+AS
+SELECT
+    i.store_id,
+    i.product_id,
+    i.quantity_available
+FROM demo.retail_analytics.inventory_external i
+WHERE i.quantity_available < 20;
+
+-- 5. Standard Views
+
+CREATE VIEW demo.retail_analytics.v_product_catalog AS
+SELECT product_id, product_name, category, price
+FROM demo.retail_analytics.product;
+
+CREATE VIEW demo.retail_analytics.v_customer_profile AS
+SELECT
+    c.customer_id,
+    CONCAT(c.first_name, ' ', c.last_name) AS full_name,
+    c.email,
+    c.loyalty_member
+FROM demo.retail_analytics.customer c;
+
+CREATE VIEW demo.retail_analytics.v_sale_detail AS
+SELECT
+    s.sale_id,
+    s.sale_date,
+    p.product_name,
+    c.first_name AS customer_first,
+    st.store_name,
+    s.quantity,
+    s.total_amount
+FROM demo.retail_analytics.sale s
+JOIN demo.retail_analytics.product p ON s.product_id = p.product_id
+JOIN demo.retail_analytics.customer c ON s.customer_id = c.customer_id
+JOIN demo.retail_analytics.store st ON s.store_id = st.store_id;
