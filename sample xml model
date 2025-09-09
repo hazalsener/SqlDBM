@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PowerDesignerModel>
+    <Tables>
+        <!-- REGION table -->
+        <Table Name="REGION" Code="REGION" Comment="Stores region information">
+            <Columns>
+                <Column Name="REGION_ID" DataType="INT" Length="10" Mandatory="Yes" PrimaryKey="Yes" Comment="Unique region ID"/>
+                <Column Name="REGION_NAME" DataType="VARCHAR" Length="50" Mandatory="Yes" Comment="Region name"/>
+            </Columns>
+            <PrimaryKey>
+                <KeyColumn Name="REGION_ID"/>
+            </PrimaryKey>
+        </Table>
+
+        <!-- CUSTOMER table -->
+        <Table Name="CUSTOMER" Code="CUSTOMER" Comment="Stores customer information">
+            <Columns>
+                <Column Name="CUSTOMER_ID" DataType="INT" Length="10" Mandatory="Yes" PrimaryKey="Yes" Comment="Unique customer ID"/>
+                <Column Name="FIRST_NAME" DataType="VARCHAR" Length="50" Mandatory="Yes" Comment="Customer first name"/>
+                <Column Name="LAST_NAME" DataType="VARCHAR" Length="50" Mandatory="Yes" Comment="Customer last name"/>
+                <Column Name="EMAIL" DataType="VARCHAR" Length="100" Mandatory="No" Comment="Customer email address"/>
+                <Column Name="REGION_ID" DataType="INT" Length="10" Mandatory="Yes" Comment="Region ID"/>
+                <Column Name="CREATED_DATE" DataType="DATETIME" Mandatory="Yes" Default="CURRENT_TIMESTAMP" Comment="Record creation date"/>
+            </Columns>
+            <PrimaryKey>
+                <KeyColumn Name="CUSTOMER_ID"/>
+            </PrimaryKey>
+            <ForeignKeys>
+                <ForeignKey Name="FK_CUSTOMER_REGION" TargetTable="REGION">
+                    <KeyColumn LocalColumn="REGION_ID" TargetColumn="REGION_ID"/>
+                </ForeignKey>
+            </ForeignKeys>
+        </Table>
+
+        <!-- OIL table -->
+        <Table Name="OIL" Code="OIL" Comment="Stores oil types">
+            <Columns>
+                <Column Name="OIL_ID" DataType="INT" Length="10" Mandatory="Yes" PrimaryKey="Yes" Comment="Unique oil ID"/>
+                <Column Name="OIL_NAME" DataType="VARCHAR" Length="100" Mandatory="Yes" Comment="Name of the oil"/>
+                <Column Name="VISCOSITY" DataType="VARCHAR" Length="20" Mandatory="No" Comment="Oil viscosity grade"/>
+            </Columns>
+            <PrimaryKey>
+                <KeyColumn Name="OIL_ID"/>
+            </PrimaryKey>
+        </Table>
+
+        <!-- PRODUCT table -->
+        <Table Name="PRODUCT" Code="PRODUCT" Comment="Stores products purchased by customers">
+            <Columns>
+                <Column Name="PRODUCT_ID" DataType="INT" Length="10" Mandatory="Yes" PrimaryKey="Yes" Comment="Unique product ID"/>
+                <Column Name="PRODUCT_NAME" DataType="VARCHAR" Length="100" Mandatory="Yes" Comment="Product name"/>
+                <Column Name="CUSTOMER_ID" DataType="INT" Length="10" Mandatory="Yes" Comment="Customer who purchased"/>
+                <Column Name="OIL_ID" DataType="INT" Length="10" Mandatory="Yes" Comment="Oil type in the product"/>
+                <Column Name="PURCHASE_DATE" DataType="DATETIME" Mandatory="Yes" Default="CURRENT_TIMESTAMP" Comment="Date of purchase"/>
+            </Columns>
+            <PrimaryKey>
+                <KeyColumn Name="PRODUCT_ID"/>
+            </PrimaryKey>
+            <ForeignKeys>
+                <ForeignKey Name="FK_PRODUCT_CUSTOMER" TargetTable="CUSTOMER">
+                    <KeyColumn LocalColumn="CUSTOMER_ID" TargetColumn="CUSTOMER_ID"/>
+                </ForeignKey>
+                <ForeignKey Name="FK_PRODUCT_OIL" TargetTable="OIL">
+                    <KeyColumn LocalColumn="OIL_ID" TargetColumn="OIL_ID"/>
+                </ForeignKey>
+            </ForeignKeys>
+        </Table>
+
+    </Tables>
+</PowerDesignerModel>
