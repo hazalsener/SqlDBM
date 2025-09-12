@@ -1,0 +1,521 @@
+-- "SUPPLYCHAIN"
+create or replace schema ACMECORP.SUPPLYCHAIN COMMENT='Supply Chain Data Model';
+
+create or replace tag ACMECORP.SUPPLYCHAIN.ACCESS_LEVEL  allowed_values  'RESTRICTED' ;
+create or replace tag ACMECORP.SUPPLYCHAIN.DATA_OWNER  allowed_values  'SUPPLYCHAINTEAM' ;
+create or replace tag ACMECORP.SUPPLYCHAIN.PII  allowed_values  'NO' , 'YES' ;
+create or replace tag ACMECORP.SUPPLYCHAIN.RETENTION_PERIOD  allowed_values  '7 YEARS' ;
+create or replace TABLE ACMECORP.SUPPLYCHAIN.AUDITLOGFACT (
+	USERID NUMBER(38,0) NOT NULL COMMENT 'The ''UserID'' column contains data related to ''userid''. This column likely represents an identifier.',
+	AUDITID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''AuditID'' column contains data related to ''auditid''. This column likely represents an identifier.',
+	ACTION VARCHAR(255) COMMENT 'The ''Action'' column contains data related to ''action''.',
+	ACTIONDATE DATE COMMENT 'The ''ActionDate'' column contains data related to ''actiondate''. This column stores information related to dates or times.',
+	ACTIONTIME TIMESTAMP_NTZ(9) COMMENT 'The ''ActionTime'' column contains data related to ''actiontime''. This column stores information related to dates or times.',
+	ENTITYAFFECTED VARCHAR(100) COMMENT 'The ''EntityAffected'' column contains data related to ''entityaffected''.',
+	ENTITYID NUMBER(38,0) COMMENT 'The ''EntityID'' column contains data related to ''entityid''. This column likely represents an identifier.',
+	NOTES VARCHAR(500) COMMENT 'The ''Notes'' column contains data related to ''notes''.',
+	constraint FK_18 foreign key (USERID) references ACMECORP.SUPPLYCHAIN.USERDIM(USERID)
+) WITH TAG (ACMECORP.SUPPLYCHAIN.ACCESS_LEVEL='RESTRICTED')
+;
+create or replace TABLE ACMECORP.SUPPLYCHAIN.CATEGORYDIM (
+	CATEGORYKEY NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''CategoryKey'' column contains data related to ''categorykey''.',
+	CATEGORYNAME VARCHAR(255) NOT NULL COMMENT 'The ''CategoryName'' column contains data related to ''categoryname''. This column holds name-related data.',
+	DESCRIPTION VARCHAR(500) COMMENT 'The ''Description'' column contains data related to ''description''.',
+	constraint PK_1 primary key (CATEGORYKEY)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.CUSTOMER (
+	CUSTOMERID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''CustomerID'' column contains data related to ''customerid''. This column likely represents an identifier.',
+	CUSTOMERNAME VARCHAR(255) NOT NULL WITH TAG (ACMECORP.SUPPLYCHAIN.PII='YES') COMMENT 'The ''CustomerName'' column contains data related to ''customername''. This column holds name-related data.',
+	CONTACTNAME VARCHAR(255) COMMENT 'The ''ContactName'' column contains data related to ''contactname''. This column holds name-related data.',
+	CONTACTTITLE VARCHAR(255) COMMENT 'The ''ContactTitle'' column contains data related to ''contacttitle''.',
+	ADDRESS VARCHAR(255) COMMENT 'The ''Address'' column contains data related to ''address''.',
+	CITY VARCHAR(100) COMMENT 'The ''City'' column contains data related to ''city''.',
+	STATE VARCHAR(100) COMMENT 'The ''State'' column contains data related to ''state''.',
+	ZIPCODE VARCHAR(20) COMMENT 'The ''ZipCode'' column contains data related to ''zipcode''.',
+	COUNTRY VARCHAR(100) COMMENT 'The ''Country'' column contains data related to ''country''.',
+	PHONE VARCHAR(20) COMMENT 'The ''Phone'' column contains data related to ''phone''.',
+	EMAIL VARCHAR(100) COMMENT 'The ''Email'' column contains data related to ''email''.',
+	CUSTOMERTYPE VARCHAR(100) COMMENT 'The ''CustomerType'' column contains data related to ''customertype''.',
+	constraint PK_1 primary key (CUSTOMERID)
+) WITH TAG (ACMECORP.SUPPLYCHAIN.PII='YES')
+;
+create or replace TABLE ACMECORP.SUPPLYCHAIN.CUSTOMERFEEDBACKFACT (
+	FEEDBACKID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''FeedbackID'' column contains data related to ''feedbackid''. This column likely represents an identifier.',
+	CUSTOMERKEY NUMBER(38,0) COMMENT 'The ''CustomerKey'' column contains data related to ''customerkey''.',
+	PRODUCTKEY NUMBER(38,0) COMMENT 'The ''ProductKey'' column contains data related to ''productkey''.',
+	DATEKEY DATE COMMENT 'The ''DateKey'' column contains data related to ''datekey''. This column stores information related to dates or times.',
+	FEEDBACKRATING NUMBER(38,0) COMMENT 'The ''FeedbackRating'' column contains data related to ''feedbackrating''.',
+	FEEDBACKCOMMENTS VARCHAR(500) COMMENT 'The ''FeedbackComments'' column contains data related to ''feedbackcomments''.',
+	constraint PK_1 primary key (FEEDBACKID)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.CUSTOMERLOYALTYPROGRAMDIM (
+	LOYALTYPROGRAMKEY NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''LoyaltyProgramKey'' column contains data related to ''loyaltyprogramkey''.',
+	CUSTOMERKEY NUMBER(38,0) COMMENT 'The ''CustomerKey'' column contains data related to ''customerkey''.',
+	PROGRAMNAME VARCHAR(100) COMMENT 'The ''ProgramName'' column contains data related to ''programname''. This column holds name-related data.',
+	REWARDPOINTS NUMBER(38,0) COMMENT 'The ''RewardPoints'' column contains data related to ''rewardpoints''.',
+	PROGRAMSTARTDATE DATE COMMENT 'The ''ProgramStartDate'' column contains data related to ''programstartdate''. This column stores information related to dates or times.',
+	constraint PK_1 primary key (LOYALTYPROGRAMKEY)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.CUSTOMERPAYMENTS (
+	PAYMENTDATE DATE NOT NULL COMMENT 'The ''PaymentDate'' column contains data related to ''paymentdate''. This column stores information related to dates or times.',
+	AMOUNT NUMBER(15,2) NOT NULL COMMENT 'The ''Amount'' column contains data related to ''amount''. This column represents a numeric value, likely related to amounts or prices.',
+	PAYMENTMETHOD VARCHAR(50) COMMENT 'The ''PaymentMethod'' column contains data related to ''paymentmethod''.',
+	PAYMENTREFERENCE VARCHAR(100) COMMENT 'The ''PaymentReference'' column contains data related to ''paymentreference''.',
+	CUSTOMERID NUMBER(38,0) NOT NULL COMMENT 'The ''CustomerID'' column contains data related to ''customerid''. This column likely represents an identifier.',
+	PAYMENTID NUMBER(38,0) NOT NULL COMMENT 'The ''PaymentID'' column contains data related to ''paymentid''. This column likely represents an identifier.',
+	constraint FK_17 foreign key (PAYMENTID) references ACMECORP.SUPPLYCHAIN.SUPPLIERPAYMENTS(PAYMENTID),
+	constraint FK_7 foreign key (CUSTOMERID) references ACMECORP.SUPPLYCHAIN.CUSTOMER(CUSTOMERID)
+);
+create or replace materialized view ACMECORP.SUPPLYCHAIN.CUSTOMER_MV(
+	CUSTOMERID,
+	CUSTOMERNAME,
+	CONTACTNAME,
+	CONTACTTITLE,
+	ADDRESS,
+	CITY,
+	STATE,
+	ZIPCODE,
+	COUNTRY,
+	PHONE,
+	EMAIL,
+	CUSTOMERTYPE
+) as select * from SUPPLYCHAIN.CUSTOMER
+where customerid=2;
+create or replace TABLE ACMECORP.SUPPLYCHAIN.DATEDIM (
+	DATEKEY DATE NOT NULL COMMENT 'Primary key for the date dimension, usually in YYYY-MM-DD format.',
+	FULLDATE DATE COMMENT 'The full date value.',
+	DAY NUMBER(38,0) COMMENT 'Day of the month (1-31).',
+	DAYSUFFIX VARCHAR(4) COMMENT 'Suffix for the day (st, nd, rd, th).',
+	DAYNAME VARCHAR(10) COMMENT 'Name of the day (Monday, Tuesday, etc.).',
+	WEEKDAYWEEKENDFLAG VARCHAR(10) COMMENT 'Indicates whether the date is a weekday or weekend.',
+	ISHOLIDAY BOOLEAN COMMENT 'Indicates if the date is a holiday (true/false).',
+	WEEKNUMBEROFYEAR NUMBER(38,0) COMMENT 'The week number of the year.',
+	MONTH NUMBER(38,0) COMMENT 'Month number (1-12).',
+	MONTHNAME VARCHAR(20) COMMENT 'Full name of the month (January, February, etc.).',
+	QUARTER NUMBER(38,0) COMMENT 'Quarter of the year (1-4).',
+	QUARTERNAME VARCHAR(20) COMMENT 'Full name of the quarter (Q1, Q2, Q3, Q4).',
+	YEAR NUMBER(38,0) COMMENT 'The full year (e.g., 2023).',
+	FISCALYEAR NUMBER(38,0) COMMENT 'Fiscal year associated with the date.',
+	FISCALQUARTER NUMBER(38,0) COMMENT 'Fiscal quarter (1-4).',
+	FISCALMONTH NUMBER(38,0) COMMENT 'Fiscal month (1-12).',
+	ISWEEKEND BOOLEAN COMMENT 'Indicates if the date is on a weekend (true/false).',
+	ISWORKDAY BOOLEAN COMMENT 'Indicates if the date is a working day (true/false).',
+	primary key (DATEKEY)
+)COMMENT='Date dimension table for time-related analysis'
+;
+create or replace TABLE ACMECORP.SUPPLYCHAIN.EMPLOYEEDIM (
+	EMPLOYEEKEY NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''EmployeeKey'' column contains data related to ''employeekey''.',
+	EMPLOYEEID NUMBER(38,0) COMMENT 'The ''EmployeeID'' column contains data related to ''employeeid''. This column likely represents an identifier.',
+	FIRSTNAME VARCHAR(100) COMMENT 'The ''FirstName'' column contains data related to ''firstname''. This column holds name-related data.',
+	LASTNAME VARCHAR(100) COMMENT 'The ''LastName'' column contains data related to ''lastname''. This column holds name-related data.',
+	JOBTITLE VARCHAR(100) COMMENT 'The ''JobTitle'' column contains data related to ''jobtitle''.',
+	DEPARTMENT VARCHAR(100) COMMENT 'The ''Department'' column contains data related to ''department''.',
+	HIREDATE DATE COMMENT 'The ''HireDate'' column contains data related to ''hiredate''. This column stores information related to dates or times.',
+	TERMINATIONDATE DATE COMMENT 'The ''TerminationDate'' column contains data related to ''terminationdate''. This column stores information related to dates or times.',
+	SUPERVISORID NUMBER(38,0) COMMENT 'The ''SupervisorID'' column contains data related to ''supervisorid''. This column likely represents an identifier.'
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.EMPLOYEEPERFORMANCEFACT (
+	PERFORMANCEID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''PerformanceID'' column contains data related to ''performanceid''. This column likely represents an identifier.',
+	EMPLOYEEKEY NUMBER(38,0) COMMENT 'The ''EmployeeKey'' column contains data related to ''employeekey''.',
+	DATEKEY DATE COMMENT 'The ''DateKey'' column contains data related to ''datekey''. This column stores information related to dates or times.',
+	TASKSCOMPLETED NUMBER(38,0) COMMENT 'The ''TasksCompleted'' column contains data related to ''taskscompleted''.',
+	ERRORSMADE NUMBER(38,0) COMMENT 'The ''ErrorsMade'' column contains data related to ''errorsmade''.',
+	PERFORMANCESCORE NUMBER(5,2) COMMENT 'The ''PerformanceScore'' column contains data related to ''performancescore''.',
+	constraint PK_1 primary key (PERFORMANCEID)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.ENERGYCONSUMPTIONFACT (
+	ENERGYID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''EnergyID'' column contains data related to ''energyid''. This column likely represents an identifier.',
+	WAREHOUSEKEY NUMBER(38,0) COMMENT 'The ''WarehouseKey'' column contains data related to ''warehousekey''.',
+	DATEKEY DATE COMMENT 'The ''DateKey'' column contains data related to ''datekey''. This column stores information related to dates or times.',
+	ENERGYCONSUMEDKWH NUMBER(10,2) COMMENT 'The ''EnergyConsumedKWh'' column contains data related to ''energyconsumedkwh''.',
+	ENERGYCOST NUMBER(10,2) COMMENT 'The ''EnergyCost'' column contains data related to ''energycost''.',
+	constraint PK_1 primary key (ENERGYID)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.ENVIRONMENTALIMPACTFACT (
+	IMPACTID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''ImpactID'' column contains data related to ''impactid''. This column likely represents an identifier.',
+	DATEKEY DATE COMMENT 'The ''DateKey'' column contains data related to ''datekey''. This column stores information related to dates or times.',
+	EMISSIONSCO2KG NUMBER(10,2) COMMENT 'The ''EmissionsCO2Kg'' column contains data related to ''emissionsco2kg''.',
+	SHIPMENTID NUMBER(38,0) NOT NULL COMMENT 'The ''ShipmentID'' column contains data related to ''shipmentid''. This column likely represents an identifier.',
+	constraint PK_1 primary key (IMPACTID),
+	constraint FK_13 foreign key (SHIPMENTID) references ACMECORP.SUPPLYCHAIN.SHIPMENT(SHIPMENTID)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.FORECASTINGFACT (
+	FORECASTID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''ForecastID'' column contains data related to ''forecastid''. This column likely represents an identifier.',
+	SHRINKAGEID NUMBER(38,0) NOT NULL COMMENT 'The ''ShrinkageID'' column contains data related to ''shrinkageid''. This column likely represents an identifier.',
+	PRODUCTKEY NUMBER(38,0) COMMENT 'The ''ProductKey'' column contains data related to ''productkey''.',
+	DATEKEY DATE COMMENT 'The ''DateKey'' column contains data related to ''datekey''. This column stores information related to dates or times.',
+	WAREHOUSEKEY NUMBER(38,0) COMMENT 'The ''WarehouseKey'' column contains data related to ''warehousekey''.',
+	FORECASTEDDEMAND NUMBER(38,0) COMMENT 'The ''ForecastedDemand'' column contains data related to ''forecasteddemand''.',
+	ACTUALDEMAND NUMBER(38,0) COMMENT 'The ''ActualDemand'' column contains data related to ''actualdemand''.',
+	FORECASTACCURACY NUMBER(5,2) COMMENT 'The ''ForecastAccuracy'' column contains data related to ''forecastaccuracy''.',
+	constraint PK_1 primary key (FORECASTID, SHRINKAGEID),
+	constraint FK_1 foreign key (SHRINKAGEID) references ACMECORP.SUPPLYCHAIN.INVENTORYSHRINKAGEFACT(SHRINKAGEID)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.INVENTORY (
+	INVENTORYID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''InventoryID'' column contains data related to ''inventoryid''. This column likely represents an identifier.',
+	QUANTITY NUMBER(38,0) NOT NULL COMMENT 'The ''Quantity'' column contains data related to ''quantity''.',
+	LASTUPDATED DATE DEFAULT CURRENT_DATE() COMMENT 'The ''LastUpdated'' column contains data related to ''lastupdated''. This column stores information related to dates or times.',
+	PRODUCTID NUMBER(38,0) NOT NULL,
+	WAREHOUSEID NUMBER(38,0) NOT NULL,
+	constraint PK_1 primary key (INVENTORYID)
+) WITH TAG (ACMECORP.SUPPLYCHAIN.DATA_OWNER='SUPPLYCHAINTEAM')
+;
+create or replace TABLE ACMECORP.SUPPLYCHAIN.INVENTORYSHRINKAGEFACT (
+	SHRINKAGEID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''ShrinkageID'' column contains data related to ''shrinkageid''. This column likely represents an identifier.',
+	PRODUCTKEY NUMBER(38,0) COMMENT 'The ''ProductKey'' column contains data related to ''productkey''.',
+	WAREHOUSEKEY NUMBER(38,0) COMMENT 'The ''WarehouseKey'' column contains data related to ''warehousekey''.',
+	DATEKEY DATE COMMENT 'The ''DateKey'' column contains data related to ''datekey''. This column stores information related to dates or times.',
+	SHRINKAGEQUANTITY NUMBER(38,0) COMMENT 'The ''ShrinkageQuantity'' column contains data related to ''shrinkagequantity''.',
+	SHRINKAGEREASON VARCHAR(255) COMMENT 'The ''ShrinkageReason'' column contains data related to ''shrinkagereason''.',
+	constraint PK_1 primary key (SHRINKAGEID)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.ORDERCANCELLATIONREASONDIM (
+	CANCELLATIONREASONKEY NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''CancellationReasonKey'' column contains data related to ''cancellationreasonkey''.',
+	REASONDESCRIPTION VARCHAR(255) NOT NULL COMMENT 'The ''ReasonDescription'' column contains data related to ''reasondescription''.',
+	constraint PK_1 primary key (CANCELLATIONREASONKEY)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.ORDERRETURNSPOLICYDIM (
+	RETURNSPOLICYKEY NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''ReturnsPolicyKey'' column contains data related to ''returnspolicykey''.',
+	POLICYDESCRIPTION VARCHAR(255) COMMENT 'The ''PolicyDescription'' column contains data related to ''policydescription''.',
+	RETURNWINDOWDAYS NUMBER(38,0) COMMENT 'The ''ReturnWindowDays'' column contains data related to ''returnwindowdays''.',
+	constraint PK_1 primary key (RETURNSPOLICYKEY)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.ORDERS (
+	ORDERID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''OrderID'' column contains data related to ''orderid''. This column likely represents an identifier.',
+	SHIPMENTID NUMBER(38,0) NOT NULL COMMENT 'The ''ShipmentID'' column contains data related to ''shipmentid''. This column likely represents an identifier.',
+	CUSTOMERID NUMBER(38,0) NOT NULL COMMENT 'The ''CustomerID'' column contains data related to ''customerid''. This column likely represents an identifier.',
+	ORDERDATE DATE NOT NULL COMMENT 'The ''OrderDate'' column contains data related to ''orderdate''. This column stores information related to dates or times.',
+	REQUIREDDATE DATE NOT NULL COMMENT 'The ''RequiredDate'' column contains data related to ''requireddate''. This column stores information related to dates or times.',
+	SHIPPEDDATE DATE COMMENT 'The ''ShippedDate'' column contains data related to ''shippeddate''. This column stores information related to dates or times.',
+	STATUS VARCHAR(50) NOT NULL COMMENT 'The ''Status'' column contains data related to ''status''. This column contains status information.',
+	TOTALAMOUNT NUMBER(15,2) COMMENT 'The ''TotalAmount'' column contains data related to ''totalamount''. This column represents a numeric value, likely related to amounts or prices.',
+	constraint PK_1 primary key (ORDERID),
+	constraint FK_19 foreign key (SHIPMENTID) references ACMECORP.SUPPLYCHAIN.SHIPMENT(SHIPMENTID),
+	constraint FK_6 foreign key (CUSTOMERID) references ACMECORP.SUPPLYCHAIN.CUSTOMER(CUSTOMERID)
+) WITH TAG (ACMECORP.SUPPLYCHAIN.ACCESS_LEVEL='RESTRICTED', ACMECORP.SUPPLYCHAIN.DATA_OWNER='SUPPLYCHAINTEAM')
+;
+create or replace TABLE ACMECORP.SUPPLYCHAIN.ORDERSTATUSDIM (
+	ORDERSTATUSKEY NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''OrderStatusKey'' column contains data related to ''orderstatuskey''. This column contains status information.',
+	STATUSDESCRIPTION VARCHAR(255) NOT NULL COMMENT 'The ''StatusDescription'' column contains data related to ''statusdescription''. This column contains status information.',
+	constraint PK_1 primary key (ORDERSTATUSKEY)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.ORDERSTATUSTRANSITIONFACT (
+	TRANSITIONID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''TransitionID'' column contains data related to ''transitionid''. This column likely represents an identifier.',
+	CANCELLATIONREASONKEY NUMBER(38,0) NOT NULL COMMENT 'The ''CancellationReasonKey'' column contains data related to ''cancellationreasonkey''.',
+	ORDERID NUMBER(38,0) NOT NULL COMMENT 'The ''OrderID'' column contains data related to ''orderid''. This column likely represents an identifier.',
+	OLDSTATUSKEY NUMBER(38,0) COMMENT 'The ''OldStatusKey'' column contains data related to ''oldstatuskey''. This column contains status information.',
+	NEWSTATUSKEY NUMBER(38,0) COMMENT 'The ''NewStatusKey'' column contains data related to ''newstatuskey''. This column contains status information.',
+	TRANSITIONDATE DATE COMMENT 'The ''TransitionDate'' column contains data related to ''transitiondate''. This column stores information related to dates or times.',
+	TRANSITIONTIME TIMESTAMP_NTZ(9) COMMENT 'The ''TransitionTime'' column contains data related to ''transitiontime''. This column stores information related to dates or times.',
+	constraint PK_1 primary key (TRANSITIONID, CANCELLATIONREASONKEY),
+	constraint FK_4 foreign key (CANCELLATIONREASONKEY) references ACMECORP.SUPPLYCHAIN.ORDERCANCELLATIONREASONDIM(CANCELLATIONREASONKEY),
+	constraint FK_5 foreign key (ORDERID) references ACMECORP.SUPPLYCHAIN.ORDERS(ORDERID)
+) WITH TAG (ACMECORP.SUPPLYCHAIN.RETENTION_PERIOD='7 YEARS')
+;
+create or replace TABLE ACMECORP.SUPPLYCHAIN.PRICINGDIM (
+	PRICINGKEY NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''PricingKey'' column contains data related to ''pricingkey''.',
+	PRODUCTKEY NUMBER(38,0) COMMENT 'The ''ProductKey'' column contains data related to ''productkey''.',
+	CUSTOMERKEY NUMBER(38,0) COMMENT 'The ''CustomerKey'' column contains data related to ''customerkey''.',
+	PRICETIER VARCHAR(50) COMMENT 'The ''PriceTier'' column contains data related to ''pricetier''. This column represents a numeric value, likely related to amounts or prices.',
+	UNITPRICE NUMBER(10,2) COMMENT 'The ''UnitPrice'' column contains data related to ''unitprice''. This column represents a numeric value, likely related to amounts or prices.',
+	EFFECTIVESTARTDATE DATE COMMENT 'The ''EffectiveStartDate'' column contains data related to ''effectivestartdate''. This column stores information related to dates or times.',
+	EFFECTIVEENDDATE DATE COMMENT 'The ''EffectiveEndDate'' column contains data related to ''effectiveenddate''. This column stores information related to dates or times.',
+	constraint PK_1 primary key (PRICINGKEY)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.PRODUCT (
+	PRODUCTID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''ProductID'' column contains data related to ''productid''. This column likely represents an identifier.',
+	SUPPLIERID NUMBER(38,0) NOT NULL COMMENT 'The ''SupplierID'' column contains data related to ''supplierid''. This column likely represents an identifier.',
+	PRODUCTNAME VARCHAR(255) NOT NULL COMMENT 'The ''ProductName'' column contains data related to ''productname''. This column holds name-related data.',
+	CATEGORY VARCHAR(100) COMMENT 'The ''Category'' column contains data related to ''category''.',
+	UNITPRICE NUMBER(10,2) COMMENT 'The ''UnitPrice'' column contains data related to ''unitprice''. This column represents a numeric value, likely related to amounts or prices.',
+	UNITSINSTOCK NUMBER(38,0) COMMENT 'The ''UnitsInStock'' column contains data related to ''unitsinstock''.',
+	UNITSONORDER NUMBER(38,0) COMMENT 'The ''UnitsOnOrder'' column contains data related to ''unitsonorder''.',
+	REORDERLEVEL NUMBER(38,0) COMMENT 'The ''ReorderLevel'' column contains data related to ''reorderlevel''.',
+	DISCONTINUED BOOLEAN DEFAULT FALSE COMMENT 'The ''Discontinued'' column contains data related to ''discontinued''.',
+	constraint PK_1 primary key (PRODUCTID),
+	constraint FK_12 foreign key (SUPPLIERID) references ACMECORP.SUPPLYCHAIN.SUPPLIER(SUPPLIERID)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.PRODUCTLIFECYCLEDIM (
+	LIFECYCLEKEY NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''LifecycleKey'' column contains data related to ''lifecyclekey''.',
+	PRODUCTKEY NUMBER(38,0) COMMENT 'The ''ProductKey'' column contains data related to ''productkey''.',
+	LIFECYCLESTAGE VARCHAR(50) COMMENT 'The ''LifecycleStage'' column contains data related to ''lifecyclestage''.',
+	EFFECTIVESTARTDATE DATE COMMENT 'The ''EffectiveStartDate'' column contains data related to ''effectivestartdate''. This column stores information related to dates or times.',
+	EFFECTIVEENDDATE DATE COMMENT 'The ''EffectiveEndDate'' column contains data related to ''effectiveenddate''. This column stores information related to dates or times.',
+	constraint PK_1 primary key (LIFECYCLEKEY)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.PRODUCTRETURNFACT (
+	RETURNID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''ReturnID'' column contains data related to ''returnid''. This column likely represents an identifier.',
+	ORDERID NUMBER(38,0) NOT NULL COMMENT 'The ''OrderID'' column contains data related to ''orderid''. This column likely represents an identifier.',
+	PRODUCTKEY NUMBER(38,0) COMMENT 'The ''ProductKey'' column contains data related to ''productkey''.',
+	DATEKEY DATE COMMENT 'The ''DateKey'' column contains data related to ''datekey''. This column stores information related to dates or times.',
+	QUANTITYRETURNED NUMBER(38,0) COMMENT 'The ''QuantityReturned'' column contains data related to ''quantityreturned''.',
+	RETURNREASON VARCHAR(255) COMMENT 'The ''ReturnReason'' column contains data related to ''returnreason''.',
+	constraint PK_1 primary key (RETURNID),
+	constraint FK_14 foreign key (ORDERID) references ACMECORP.SUPPLYCHAIN.ORDERS(ORDERID)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.PURCHASEORDER (
+	PURCHASEORDERID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''PurchaseOrderID'' column contains data related to ''purchaseorderid''. This column likely represents an identifier.',
+	ORDERDATE DATE NOT NULL COMMENT 'The ''OrderDate'' column contains data related to ''orderdate''. This column stores information related to dates or times.',
+	DELIVERYDATE DATE COMMENT 'The ''DeliveryDate'' column contains data related to ''deliverydate''. This column stores information related to dates or times.',
+	STATUS VARCHAR(50) NOT NULL COMMENT 'The ''Status'' column contains data related to ''status''. This column contains status information.',
+	TOTALAMOUNT NUMBER(15,2) COMMENT 'The ''TotalAmount'' column contains data related to ''totalamount''. This column represents a numeric value, likely related to amounts or prices.',
+	SUPPLIERID NUMBER(38,0) NOT NULL COMMENT 'The ''SupplierID'' column contains data related to ''supplierid''. This column likely represents an identifier.',
+	constraint PK_1 primary key (PURCHASEORDERID),
+	constraint FK_16 foreign key (SUPPLIERID) references ACMECORP.SUPPLYCHAIN.SUPPLIER(SUPPLIERID)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.QUALITYCONTROLFACT (
+	QCID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''QCID'' column contains data related to ''qcid''. This column likely represents an identifier.',
+	PRODUCTKEY NUMBER(38,0) COMMENT 'The ''ProductKey'' column contains data related to ''productkey''.',
+	SUPPLIERKEY NUMBER(38,0) COMMENT 'The ''SupplierKey'' column contains data related to ''supplierkey''.',
+	DATEKEY DATE COMMENT 'The ''DateKey'' column contains data related to ''datekey''. This column stores information related to dates or times.',
+	QUANTITYCHECKED NUMBER(38,0) COMMENT 'The ''QuantityChecked'' column contains data related to ''quantitychecked''.',
+	QUANTITYREJECTED NUMBER(38,0) COMMENT 'The ''QuantityRejected'' column contains data related to ''quantityrejected''.',
+	QCNOTES VARCHAR(500) COMMENT 'The ''QCNotes'' column contains data related to ''qcnotes''.',
+	constraint PK_1 primary key (QCID)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.SHIPMENT (
+	SHIPMENTID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''ShipmentID'' column contains data related to ''shipmentid''. This column likely represents an identifier.',
+	WAREHOUSEID NUMBER(38,0) NOT NULL COMMENT 'The ''WarehouseID'' column contains data related to ''warehouseid''. This column likely represents an identifier.',
+	SHIPMENTDATE DATE NOT NULL COMMENT 'The ''ShipmentDate'' column contains data related to ''shipmentdate''. This column stores information related to dates or times.',
+	EXPECTEDARRIVALDATE DATE COMMENT 'The ''ExpectedArrivalDate'' column contains data related to ''expectedarrivaldate''. This column stores information related to dates or times.',
+	SHIPMENTSTATUS VARCHAR(50) COMMENT 'The ''ShipmentStatus'' column contains data related to ''shipmentstatus''. This column contains status information.',
+	SHIPPINGCARRIER VARCHAR(100) COMMENT 'The ''ShippingCarrier'' column contains data related to ''shippingcarrier''.',
+	TRACKINGNUMBER VARCHAR(50) COMMENT 'The ''TrackingNumber'' column contains data related to ''trackingnumber''.',
+	constraint PK_1 primary key (SHIPMENTID),
+	constraint FK_9 foreign key (WAREHOUSEID) references ACMECORP.SUPPLYCHAIN.WAREHOUSE(WAREHOUSEID)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.SHIPPINGINCIDENTFACT (
+	INCIDENTID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''IncidentID'' column contains data related to ''incidentid''. This column likely represents an identifier.',
+	ZONEKEY NUMBER(38,0) NOT NULL COMMENT 'The ''ZoneKey'' column contains data related to ''zonekey''.',
+	ORDERSTATUSKEY NUMBER(38,0) NOT NULL COMMENT 'The ''OrderStatusKey'' column contains data related to ''orderstatuskey''. This column contains status information.',
+	SHIPMENTID NUMBER(38,0) NOT NULL COMMENT 'The ''ShipmentID'' column contains data related to ''shipmentid''. This column likely represents an identifier.',
+	DATEKEY DATE COMMENT 'The ''DateKey'' column contains data related to ''datekey''. This column stores information related to dates or times.',
+	INCIDENTTYPE VARCHAR(50) COMMENT 'The ''IncidentType'' column contains data related to ''incidenttype''. This column likely represents an identifier.',
+	RESOLUTION VARCHAR(255) COMMENT 'The ''Resolution'' column contains data related to ''resolution''.',
+	constraint PK_1 primary key (INCIDENTID, ZONEKEY, ORDERSTATUSKEY),
+	constraint FK_2 foreign key (ZONEKEY) references ACMECORP.SUPPLYCHAIN.WAREHOUSEZONEDIM(ZONEKEY),
+	constraint FK_3 foreign key (ORDERSTATUSKEY) references ACMECORP.SUPPLYCHAIN.ORDERSTATUSDIM(ORDERSTATUSKEY),
+	constraint FK_8 foreign key (SHIPMENTID) references ACMECORP.SUPPLYCHAIN.SHIPMENT(SHIPMENTID)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.SHIPPINGMETHODDIM (
+	SHIPPINGMETHODKEY NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''ShippingMethodKey'' column contains data related to ''shippingmethodkey''.',
+	METHODNAME VARCHAR(255) NOT NULL COMMENT 'The ''MethodName'' column contains data related to ''methodname''. This column holds name-related data.',
+	CARRIER VARCHAR(255) COMMENT 'The ''Carrier'' column contains data related to ''carrier''.',
+	ESTIMATEDDELIVERYTIME NUMBER(38,0) COMMENT 'The ''EstimatedDeliveryTime'' column contains data related to ''estimateddeliverytime''. This column stores information related to dates or times.',
+	constraint PK_1 primary key (SHIPPINGMETHODKEY)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.SUPPLIER (
+	SUPPLIERID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''SupplierID'' column contains data related to ''supplierid''. This column likely represents an identifier.',
+	SUPPLIERNAME VARCHAR(255) NOT NULL COMMENT 'The ''SupplierName'' column contains data related to ''suppliername''. This column holds name-related data.',
+	CONTACTNAME VARCHAR(255) COMMENT 'The ''ContactName'' column contains data related to ''contactname''. This column holds name-related data.',
+	CONTACTTITLE VARCHAR(255) COMMENT 'The ''ContactTitle'' column contains data related to ''contacttitle''.',
+	ADDRESS VARCHAR(255) COMMENT 'The ''Address'' column contains data related to ''address''.',
+	CITY VARCHAR(100) COMMENT 'The ''City'' column contains data related to ''city''.',
+	STATE VARCHAR(100) COMMENT 'The ''State'' column contains data related to ''state''.',
+	ZIPCODE VARCHAR(20) COMMENT 'The ''ZipCode'' column contains data related to ''zipcode''.',
+	COUNTRY VARCHAR(100) COMMENT 'The ''Country'' column contains data related to ''country''.',
+	PHONE VARCHAR(20) COMMENT 'The ''Phone'' column contains data related to ''phone''.',
+	EMAIL VARCHAR(100) COMMENT 'The ''Email'' column contains data related to ''email''.',
+	WEBSITE VARCHAR(100) COMMENT 'The ''Website'' column contains data related to ''website''.',
+	constraint PK_1 primary key (SUPPLIERID)
+) WITH TAG (ACMECORP.SUPPLYCHAIN.PII='YES')
+;
+create or replace TABLE ACMECORP.SUPPLYCHAIN.SUPPLIERPAYMENTS (
+	PAYMENTID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''PaymentID'' column contains data related to ''paymentid''. This column likely represents an identifier.',
+	PAYMENTDATE DATE NOT NULL COMMENT 'The ''PaymentDate'' column contains data related to ''paymentdate''. This column stores information related to dates or times.',
+	AMOUNT NUMBER(15,2) NOT NULL COMMENT 'The ''Amount'' column contains data related to ''amount''. This column represents a numeric value, likely related to amounts or prices.',
+	PAYMENTMETHOD VARCHAR(50) COMMENT 'The ''PaymentMethod'' column contains data related to ''paymentmethod''.',
+	PAYMENTREFERENCE VARCHAR(100) COMMENT 'The ''PaymentReference'' column contains data related to ''paymentreference''.',
+	SUPPLIERID NUMBER(38,0) NOT NULL COMMENT 'The ''SupplierID'' column contains data related to ''supplierid''. This column likely represents an identifier.',
+	constraint PK_1 primary key (PAYMENTID),
+	constraint FK_15 foreign key (SUPPLIERID) references ACMECORP.SUPPLYCHAIN.SUPPLIER(SUPPLIERID)
+) WITH TAG (ACMECORP.SUPPLYCHAIN.ACCESS_LEVEL='RESTRICTED')
+;
+create or replace TABLE ACMECORP.SUPPLYCHAIN.SUPPLIERPAYMENTTERMSDIM (
+	PAYMENTTERMSKEY NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''PaymentTermsKey'' column contains data related to ''paymenttermskey''.',
+	SUPPLIERKEY NUMBER(38,0) COMMENT 'The ''SupplierKey'' column contains data related to ''supplierkey''.',
+	PAYMENTTERMDESCRIPTION VARCHAR(255) COMMENT 'The ''PaymentTermDescription'' column contains data related to ''paymenttermdescription''.',
+	constraint PK_1 primary key (PAYMENTTERMSKEY)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.SUPPLIERPERFORMANCEFACT (
+	SUPPLIERPERFORMANCEFACTID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''SupplierPerformanceFactID'' column contains data related to ''supplierperformancefactid''. This column likely represents an identifier.',
+	SUPPLIERKEY NUMBER(38,0) COMMENT 'The ''SupplierKey'' column contains data related to ''supplierkey''.',
+	DATEKEY DATE COMMENT 'The ''DateKey'' column contains data related to ''datekey''. This column stores information related to dates or times.',
+	LEADTIME NUMBER(38,0) COMMENT 'The ''LeadTime'' column contains data related to ''leadtime''. This column stores information related to dates or times.',
+	DEFECTRATE NUMBER(5,2) COMMENT 'The ''DefectRate'' column contains data related to ''defectrate''.',
+	ONTIMEDELIVERYRATE NUMBER(5,2) COMMENT 'The ''OnTimeDeliveryRate'' column contains data related to ''ontimedeliveryrate''. This column stores information related to dates or times.',
+	constraint PK_1 primary key (SUPPLIERPERFORMANCEFACTID)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.SUPPLIERRELATIONSHIPDIM (
+	SUPPLIERRELATIONSHIPKEY NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''SupplierRelationshipKey'' column contains data related to ''supplierrelationshipkey''.',
+	SUPPLIERKEY NUMBER(38,0) COMMENT 'The ''SupplierKey'' column contains data related to ''supplierkey''.',
+	RELATIONSHIPTYPE VARCHAR(50) COMMENT 'The ''RelationshipType'' column contains data related to ''relationshiptype''.',
+	AGREEMENTDETAILS VARCHAR(500) COMMENT 'The ''AgreementDetails'' column contains data related to ''agreementdetails''.',
+	constraint PK_1 primary key (SUPPLIERRELATIONSHIPKEY)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.SUPPLIERRISKASSESSMENTFACT (
+	ASSESSMENTID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''AssessmentID'' column contains data related to ''assessmentid''. This column likely represents an identifier.',
+	SUPPLIERKEY NUMBER(38,0) COMMENT 'The ''SupplierKey'' column contains data related to ''supplierkey''.',
+	DATEKEY DATE COMMENT 'The ''DateKey'' column contains data related to ''datekey''. This column stores information related to dates or times.',
+	RISKLEVEL VARCHAR(50) COMMENT 'The ''RiskLevel'' column contains data related to ''risklevel''.',
+	ASSESSMENTNOTES VARCHAR(500) COMMENT 'The ''AssessmentNotes'' column contains data related to ''assessmentnotes''.',
+	constraint PK_1 primary key (ASSESSMENTID)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.TRANSPORTVEHICLEDIM (
+	VEHICLEKEY NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''VehicleKey'' column contains data related to ''vehiclekey''.',
+	VEHICLEID VARCHAR(100) COMMENT 'The ''VehicleID'' column contains data related to ''vehicleid''. This column likely represents an identifier.',
+	VEHICLETYPE VARCHAR(100) COMMENT 'The ''VehicleType'' column contains data related to ''vehicletype''.',
+	CAPACITY NUMBER(38,0) COMMENT 'The ''Capacity'' column contains data related to ''capacity''.',
+	LICENSEPLATE VARCHAR(20) COMMENT 'The ''LicensePlate'' column contains data related to ''licenseplate''.',
+	OPERATORNAME VARCHAR(100) COMMENT 'The ''OperatorName'' column contains data related to ''operatorname''. This column holds name-related data.',
+	constraint PK_1 primary key (VEHICLEKEY)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.USERDIM (
+	USERID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''UserID'' column contains data related to ''userid''. This column likely represents an identifier.',
+	FIRSTNAME VARCHAR(100) COMMENT 'The ''FirstName'' column contains data related to ''firstname''. This column holds name-related data.',
+	LASTNAME VARCHAR(100) COMMENT 'The ''LastName'' column contains data related to ''lastname''. This column holds name-related data.',
+	EMAIL VARCHAR(255) COMMENT 'The ''Email'' column contains data related to ''email''.',
+	ROLE VARCHAR(50) COMMENT 'The ''Role'' column contains data related to ''role''.',
+	HIREDATE DATE COMMENT 'The ''HireDate'' column contains data related to ''hiredate''. This column stores information related to dates or times.',
+	constraint PK_1 primary key (USERID)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.WAREHOUSE (
+	WAREHOUSEID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''WarehouseID'' column contains data related to ''warehouseid''. This column likely represents an identifier.',
+	WAREHOUSENAME VARCHAR(255) NOT NULL COMMENT 'The ''WarehouseName'' column contains data related to ''warehousename''. This column holds name-related data.',
+	ADDRESS VARCHAR(255) COMMENT 'The ''Address'' column contains data related to ''address''.',
+	CITY VARCHAR(100) COMMENT 'The ''City'' column contains data related to ''city''.',
+	STATE VARCHAR(100) COMMENT 'The ''State'' column contains data related to ''state''.',
+	ZIPCODE VARCHAR(20) COMMENT 'The ''ZipCode'' column contains data related to ''zipcode''.',
+	COUNTRY VARCHAR(100) COMMENT 'The ''Country'' column contains data related to ''country''.',
+	MANAGERNAME VARCHAR(255) COMMENT 'The ''ManagerName'' column contains data related to ''managername''. This column holds name-related data.',
+	CAPACITY NUMBER(38,0) COMMENT 'The ''Capacity'' column contains data related to ''capacity''.',
+	constraint PK_1 primary key (WAREHOUSEID)
+) WITH TAG (ACMECORP.SUPPLYCHAIN.RETENTION_PERIOD='7 YEARS')
+;
+create or replace TABLE ACMECORP.SUPPLYCHAIN.WAREHOUSEMAINTENANCEFACT (
+	MAINTENANCEID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''MaintenanceID'' column contains data related to ''maintenanceid''. This column likely represents an identifier.',
+	WAREHOUSEKEY NUMBER(38,0) COMMENT 'The ''WarehouseKey'' column contains data related to ''warehousekey''.',
+	DATEKEY DATE COMMENT 'The ''DateKey'' column contains data related to ''datekey''. This column stores information related to dates or times.',
+	MAINTENANCETYPE VARCHAR(50) COMMENT 'The ''MaintenanceType'' column contains data related to ''maintenancetype''.',
+	MAINTENANCECOST NUMBER(10,2) COMMENT 'The ''MaintenanceCost'' column contains data related to ''maintenancecost''.',
+	MAINTENANCEDURATIONHOURS NUMBER(5,2) COMMENT 'The ''MaintenanceDurationHours'' column contains data related to ''maintenancedurationhours''.',
+	constraint PK_1 primary key (MAINTENANCEID)
+);
+create or replace TABLE ACMECORP.SUPPLYCHAIN.WAREHOUSEOPERATIONSFACT (
+	WAREHOUSEOPERATIONID NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The unique identifier for warehouse operation.',
+	WAREHOUSEKEY NUMBER(38,0) COMMENT 'References the warehouse in the WarehouseDim table.',
+	ZONEKEY NUMBER(38,0) COMMENT 'References the zone in the WarehouseZoneDim table.',
+	VEHICLEKEY NUMBER(38,0) COMMENT 'References the vehicle in the TransportVehicleDim table.',
+	DATEKEY DATE COMMENT 'Date of the operation.',
+	TOTALMAINTENANCECOST NUMBER(10,2) COMMENT 'Total maintenance cost for the warehouse on a given day.',
+	ENERGYCONSUMEDKWH NUMBER(10,2) COMMENT 'Total energy consumption for the warehouse on a given day.',
+	VEHICLEUSAGEHOURS NUMBER(5,2) COMMENT 'Total vehicle usage hours for the warehouse on a given day.',
+	TOTALEMPLOYEESINVOLVED NUMBER(38,0) COMMENT 'Number of employees involved in warehouse operations on a given day.',
+	TASKSCOMPLETED NUMBER(38,0) COMMENT 'Total number of tasks completed in the warehouse on a given day.',
+	constraint PK_WAREHOUSEOPERATIONSFACT primary key (WAREHOUSEOPERATIONID),
+	constraint FK_WAREHOUSEKEY foreign key (WAREHOUSEKEY) references ACMECORP.SUPPLYCHAIN.WAREHOUSE(WAREHOUSEID),
+	constraint FK_ZONEKEY foreign key (ZONEKEY) references ACMECORP.SUPPLYCHAIN.WAREHOUSEZONEDIM(ZONEKEY),
+	constraint FK_VEHICLEKEY foreign key (VEHICLEKEY) references ACMECORP.SUPPLYCHAIN.TRANSPORTVEHICLEDIM(VEHICLEKEY),
+	constraint FK_DATEKEY foreign key (DATEKEY) references ACMECORP.SUPPLYCHAIN.DATEDIM(DATEKEY)
+)COMMENT='This table is designed to provide detailed information about each date, including breakdowns of years, months, weeks, and more. This is commonly used in data warehouses for time-based analysis.'
+;
+create or replace TABLE ACMECORP.SUPPLYCHAIN.WAREHOUSEZONEDIM (
+	ZONEKEY NUMBER(38,0) NOT NULL autoincrement start 1 increment 1 noorder COMMENT 'The ''ZoneKey'' column contains data related to ''zonekey''.',
+	WAREHOUSEKEY NUMBER(38,0) COMMENT 'The ''WarehouseKey'' column contains data related to ''warehousekey''.',
+	ZONENAME VARCHAR(100) COMMENT 'The ''ZoneName'' column contains data related to ''zonename''. This column holds name-related data.',
+	ZONEFUNCTION VARCHAR(100) COMMENT 'The ''ZoneFunction'' column contains data related to ''zonefunction''.',
+	constraint PK_1 primary key (ZONEKEY)
+);
+create or replace view ACMECORP.SUPPLYCHAIN.VIEW_1(
+	MAINTENANCEID,
+	MAINTENANCEDATE,
+	MAINTENANCETYPE,
+	MAINTENANCECOST,
+	MAINTENANCEDURATIONHOURS,
+	WAREHOUSEZONE,
+	ZONEFUNCTION,
+	WAREHOUSENAME,
+	ADDRESS,
+	CITY,
+	STATE,
+	COUNTRY
+) COMMENT='View showing warehouse maintenance costs by zone and warehouse'
+ as
+(
+  SELECT 
+    wm.MaintenanceID,
+    wm.DateKey AS MaintenanceDate,
+    wm.MaintenanceType,
+    wm.MaintenanceCost,
+    wm.MaintenanceDurationHours,
+    wz.ZoneName AS WarehouseZone,
+    wz.ZoneFunction,
+    w.WarehouseName,
+    w.Address,
+    w.City,
+    w.State,
+    w.Country
+  FROM 
+    WarehouseMaintenanceFact wm
+  INNER JOIN Warehouse w
+    ON wm.WarehouseKey = w.WarehouseID
+  INNER JOIN WarehouseZoneDim wz
+    ON w.WarehouseID = wz.WarehouseKey
+);
+CREATE OR REPLACE PROCEDURE ACMECORP.SUPPLYCHAIN.CALCULATE_AND_LOG_MAINTENANCE_COST("START_DATE" DATE, "END_DATE" DATE)
+RETURNS VARCHAR(16777216)
+LANGUAGE JAVASCRIPT
+EXECUTE AS CALLER
+AS '
+try {
+    // Define a SQL query to calculate the total maintenance cost by warehouse within the date range
+    var query = `
+        SELECT 
+            wm.WarehouseKey, 
+            SUM(wm.MaintenanceCost) AS total_maintenance_cost
+        FROM 
+            WarehouseMaintenanceFact wm
+        WHERE 
+            wm.DateKey BETWEEN :start_date AND :end_date
+        GROUP BY 
+            wm.WarehouseKey;
+    `;
+    
+    // Execute the SQL query
+    var result = snowflake.execute({
+        sqlText: query,
+        binds: [start_date, end_date]
+    });
+
+    // Loop through the result set and insert the log into a separate logging table
+    while (result.next()) {
+        var warehouseKey = result.getColumnValue("WarehouseKey");
+        var totalCost = result.getColumnValue("total_maintenance_cost");
+
+        // Insert the result into a log table for maintenance cost tracking
+        var insertLogQuery = `
+            INSERT INTO MaintenanceCostLog (WarehouseKey, TotalMaintenanceCost, LogDate)
+            VALUES (?, ?, CURRENT_DATE);
+        `;
+        snowflake.execute({
+            sqlText: insertLogQuery,
+            binds: [warehouseKey, totalCost]
+        });
+    }
+
+    return "Maintenance costs calculated and logged successfully.";
+    
+} catch (err) {
+    return "Failed: " + err;
+}
+';
+CREATE OR REPLACE FUNCTION ACMECORP.SUPPLYCHAIN.CALCULATE_TOTAL_MAINTENANCE_COST("WAREHOUSE_ID" NUMBER(38,0))
+RETURNS NUMBER(10,2)
+LANGUAGE SQL
+AS '
+  (
+    SELECT COALESCE(SUM(MaintenanceCost), 0)
+    FROM WarehouseMaintenanceFact
+    WHERE WarehouseKey = warehouse_id
+  )
+';
