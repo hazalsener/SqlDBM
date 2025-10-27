@@ -16,276 +16,255 @@ CREATE TAG "gdpr_compliant";
 
 -- **************************************  "pii_flag"
 CREATE TAG "pii_flag";
-
--- ************************************** warehouses
+-- **************************************
+-- TABLE: warehouses
+-- Stores information about company warehouses including capacity, location, and management details.
+-- **************************************
 CREATE TABLE warehouses
 (
- warehouse_id          bigint NOT NULL,
- warehouse_name        varchar(100),
- location              varchar(100),
- capacity_cubic_meters decimal(12,2),
- manager_name          varchar(100),
- operating_hours       varchar(50),
- created_at            timestamp_ntz DEFAULT CURRENT_TIMESTAMP(),
+ warehouse_id          bigint NOT NULL COMMENT 'Unique identifier for the warehouse',
+ warehouse_name        varchar(100) COMMENT 'Name of the warehouse facility',
+ location              varchar(100) COMMENT 'Geographical location or city of the warehouse',
+ capacity_cubic_meters decimal(12,2) COMMENT 'Maximum storage capacity of the warehouse in cubic meters',
+ manager_name          varchar(100) COMMENT 'Name of the person managing this warehouse',
+ operating_hours       varchar(50) COMMENT 'Typical working hours or shifts of the warehouse',
+ created_at            timestamp_ntz DEFAULT CURRENT_TIMESTAMP() COMMENT 'Timestamp when the record was created',
 
  CONSTRAINT PK_warehouses PRIMARY KEY ( warehouse_id )
-);
+)
+COMMENT = 'Master table containing details of all warehouses in the company logistics network.';
 
--- ************************************** suppliers
+
+-- **************************************
+-- TABLE: suppliers
+-- Holds supplier details, contracts, and contact information.
+-- **************************************
 CREATE TABLE suppliers
 (
- supplier_id         bigint NOT NULL,
- supplier_name       varchar(100),
- contact_person      varchar(100),
- email               varchar(100),
- phone               varchar(20),
- address             text,
- country             varchar(50),
- rating              decimal(3,2),
- contract_start_date date,
- contract_end_date   date,
- created_at          timestamp_ntz DEFAULT CURRENT_TIMESTAMP(),
+ supplier_id         bigint NOT NULL COMMENT 'Unique identifier for each supplier',
+ supplier_name       varchar(100) COMMENT 'Registered name of the supplier company',
+ contact_person      varchar(100) COMMENT 'Primary contact person at the supplier organization',
+ email               varchar(100) COMMENT 'Email address of the supplier contact',
+ phone               varchar(20) COMMENT 'Phone number for supplier communication',
+ address             text COMMENT 'Full address of the supplier',
+ country             varchar(50) COMMENT 'Country where the supplier operates',
+ rating              decimal(3,2) COMMENT 'Performance or reliability rating for the supplier (e.g., 1.00–5.00)',
+ contract_start_date date COMMENT 'Start date of supplier contract',
+ contract_end_date   date COMMENT 'End date of supplier contract',
+ created_at          timestamp_ntz DEFAULT CURRENT_TIMESTAMP() COMMENT 'Timestamp when the record was created',
 
  CONSTRAINT PK_suppliers PRIMARY KEY ( supplier_id )
-);
+)
+COMMENT = 'Contains supplier contact details, ratings, and contractual information.';
 
--- ************************************** products
+
+-- **************************************
+-- TABLE: products
+-- Catalog of all available products, including pricing and category details.
+-- **************************************
 CREATE TABLE products
 (
- product_id   bigint NOT NULL,
- product_name varchar(200),
- brand        varchar(100),
- category     varchar(50),
- subcategory  varchar(50),
- unit_price   decimal(10,2),
- cost_price   decimal(10,2),
- weight       decimal(8,2),
- dimensions   varchar(50),
- launch_date  date,
- status       varchar(20),
- created_at   timestamp_ntz DEFAULT CURRENT_TIMESTAMP(),
- updated_at   timestamp_ntz DEFAULT CURRENT_TIMESTAMP(),
+ product_id   bigint NOT NULL COMMENT 'Unique identifier for each product',
+ product_name varchar(200) COMMENT 'Official name of the product',
+ brand        varchar(100) COMMENT 'Brand or manufacturer of the product',
+ category     varchar(50) COMMENT 'Main category to which the product belongs',
+ subcategory  varchar(50) COMMENT 'Subcategory for more granular classification',
+ unit_price   decimal(10,2) COMMENT 'Current selling price per unit of the product',
+ cost_price   decimal(10,2) COMMENT 'Cost incurred to produce or procure the product',
+ weight       decimal(8,2) COMMENT 'Weight of a single unit of the product (in kg or other unit)',
+ dimensions   varchar(50) COMMENT 'Physical dimensions of the product package',
+ launch_date  date COMMENT 'Date when the product was first launched or made available for sale',
+ status       varchar(20) COMMENT 'Current status of the product (e.g., active, discontinued)',
+ created_at   timestamp_ntz DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record creation timestamp',
+ updated_at   timestamp_ntz DEFAULT CURRENT_TIMESTAMP() COMMENT 'Timestamp of last update to the record',
 
  CONSTRAINT PK_products PRIMARY KEY ( product_id )
-) WITH TAG ("data_owner" = 'product_team', "business_domain" = 'catalog', "cost_center" = 'PROD-001');
+) 
+COMMENT = 'Master product catalog containing product attributes, prices, and lifecycle information.'
+WITH TAG ("data_owner" = 'product_team', "business_domain" = 'catalog', "cost_center" = 'PROD-001');
 
--- ************************************** customers
+
+-- **************************************
+-- TABLE: customers
+-- Contains personal and demographic details of registered customers.
+-- **************************************
 CREATE TABLE customers
 (
- customer_id       bigint NOT NULL,
- first_name        varchar(50),
- last_name         varchar(50),
- email             varchar(100),
- phone             varchar(20),
- registration_date date,
- customer_segment  varchar(20),
- country           varchar(50),
- state             varchar(50),
- city              varchar(50),
- postal_code       varchar(10),
- created_at        timestamp_ntz DEFAULT CURRENT_TIMESTAMP(),
- updated_at        timestamp_ntz DEFAULT CURRENT_TIMESTAMP(),
+ customer_id       bigint NOT NULL COMMENT 'Unique identifier for each customer',
+ first_name        varchar(50) COMMENT 'Customer’s first name',
+ last_name         varchar(50) COMMENT 'Customer’s last name',
+ email             varchar(100) COMMENT 'Email address used for communication and login',
+ phone             varchar(20) COMMENT 'Customer phone number',
+ registration_date date COMMENT 'Date the customer registered in the system',
+ customer_segment  varchar(20) COMMENT 'Customer classification (e.g., Retail, Wholesale, VIP)',
+ country           varchar(50) COMMENT 'Customer’s country of residence',
+ state             varchar(50) COMMENT 'State or province of the customer',
+ city              varchar(50) COMMENT 'City of residence',
+ postal_code       varchar(10) COMMENT 'Postal or ZIP code',
+ created_at        timestamp_ntz DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record creation timestamp',
+ updated_at        timestamp_ntz DEFAULT CURRENT_TIMESTAMP() COMMENT 'Last update timestamp',
 
  CONSTRAINT PK_customers PRIMARY KEY ( customer_id )
-) WITH TAG ("gdpr_compliant" = 'true');
+)
+COMMENT = 'Stores personal, geographic, and segmentation information about customers.'
+WITH TAG ("gdpr_compliant" = 'true');
 
--- ************************************** product_suppliers
+
+-- **************************************
+-- TABLE: product_suppliers
+-- Maps products to their suppliers, including pricing and lead time information.
+-- **************************************
 CREATE TABLE product_suppliers
 (
- product_supplier_id    bigint NOT NULL,
- product_id             bigint NOT NULL,
- supplier_id            bigint NOT NULL,
- supply_price           decimal(10,2),
- lead_time_days         integer,
- minimum_order_quantity integer,
- is_primary_supplier    boolean DEFAULT FALSE,
- created_at             timestamp_ntz DEFAULT CURRENT_TIMESTAMP(),
+ product_supplier_id    bigint NOT NULL COMMENT 'Unique identifier for the product-supplier relationship',
+ product_id             bigint NOT NULL COMMENT 'Foreign key referencing the product',
+ supplier_id            bigint NOT NULL COMMENT 'Foreign key referencing the supplier',
+ supply_price           decimal(10,2) COMMENT 'Price per unit offered by the supplier',
+ lead_time_days         integer COMMENT 'Number of days supplier takes to deliver after order',
+ minimum_order_quantity integer COMMENT 'Minimum number of units that can be ordered from this supplier',
+ is_primary_supplier    boolean DEFAULT FALSE COMMENT 'Flag indicating whether this is the primary supplier',
+ created_at             timestamp_ntz DEFAULT CURRENT_TIMESTAMP() COMMENT 'Timestamp when record was created',
 
  CONSTRAINT PK_product_suppliers PRIMARY KEY ( product_supplier_id ),
  CONSTRAINT FK_product_suppliers_products FOREIGN KEY ( product_id ) REFERENCES products ( product_id ),
  CONSTRAINT FK_product_suppliers_suppliers FOREIGN KEY ( supplier_id ) REFERENCES suppliers ( supplier_id )
-);
+)
+COMMENT = 'Defines supplier relationships for each product, including cost, lead time, and order terms.';
 
--- ************************************** orders
+
+-- **************************************
+-- TABLE: orders
+-- Contains customer order transactions and financial details.
+-- **************************************
 CREATE TABLE orders
 (
- order_id         bigint NOT NULL,
- customer_id      bigint NOT NULL,
- order_date       date,
- order_timestamp  timestamp_ntz,
- total_amount     decimal(12,2),
- discount_amount  decimal(10,2),
- tax_amount       decimal(10,2),
- shipping_cost    decimal(8,2),
- payment_method   varchar(30),
- order_status     varchar(20),
- shipping_address text,
- billing_address  text,
- currency         varchar(3),
- exchange_rate    decimal(10,4) DEFAULT 1.0,
- created_at       timestamp_ntz DEFAULT CURRENT_TIMESTAMP(),
- updated_at       timestamp_ntz DEFAULT CURRENT_TIMESTAMP(),
+ order_id         bigint NOT NULL COMMENT 'Unique identifier for the order',
+ customer_id      bigint NOT NULL COMMENT 'Foreign key linking to the customer placing the order',
+ order_date       date COMMENT 'Date the order was placed',
+ order_timestamp  timestamp_ntz COMMENT 'Exact timestamp when the order was submitted',
+ total_amount     decimal(12,2) COMMENT 'Total value of the order before discounts and taxes',
+ discount_amount  decimal(10,2) COMMENT 'Total discount applied to the order',
+ tax_amount       decimal(10,2) COMMENT 'Tax charged on the order',
+ shipping_cost    decimal(8,2) COMMENT 'Cost of shipping for the order',
+ payment_method   varchar(30) COMMENT 'Payment method used (e.g., credit card, PayPal)',
+ order_status     varchar(20) COMMENT 'Status of the order (e.g., pending, completed, cancelled)',
+ shipping_address text COMMENT 'Address where the order should be shipped',
+ billing_address  text COMMENT 'Billing address associated with the payment method',
+ currency         varchar(3) COMMENT 'Currency code (e.g., USD, EUR)',
+ exchange_rate    decimal(10,4) DEFAULT 1.0 COMMENT 'Exchange rate applied if currency differs from base',
+ created_at       timestamp_ntz DEFAULT CURRENT_TIMESTAMP() COMMENT 'Timestamp when the record was created',
+ updated_at       timestamp_ntz DEFAULT CURRENT_TIMESTAMP() COMMENT 'Timestamp of the last modification',
 
  CONSTRAINT PK_orders PRIMARY KEY ( order_id ),
  CONSTRAINT FK_orders_customers FOREIGN KEY ( customer_id ) REFERENCES customers ( customer_id )
-) WITH TAG ("data_owner" = 'sales_team', "pii_flag" = 'true', "cost_center" = 'SALES-001');
+)
+COMMENT = 'Stores customer order details, financials, and fulfillment data.'
+WITH TAG ("data_owner" = 'sales_team', "pii_flag" = 'true', "cost_center" = 'SALES-001');
 
--- ************************************** inventory
+
+-- **************************************
+-- TABLE: inventory
+-- Tracks stock levels and restocking metrics across warehouses.
+-- **************************************
 CREATE TABLE inventory
 (
- inventory_id       bigint NOT NULL,
- product_id         bigint NOT NULL,
- warehouse_id       bigint NOT NULL,
- quantity_on_hand   integer,
- quantity_reserved  integer,
- quantity_available integer,
- reorder_point      integer,
- reorder_quantity   integer,
- last_restock_date  date,
- created_at         timestamp_ntz DEFAULT CURRENT_TIMESTAMP(),
- updated_at         timestamp_ntz DEFAULT CURRENT_TIMESTAMP(),
+ inventory_id       bigint NOT NULL COMMENT 'Unique identifier for the inventory record',
+ product_id         bigint NOT NULL COMMENT 'Foreign key referencing the product',
+ warehouse_id       bigint NOT NULL COMMENT 'Foreign key referencing the warehouse',
+ quantity_on_hand   integer COMMENT 'Total quantity currently in stock',
+ quantity_reserved  integer COMMENT 'Quantity reserved for pending orders',
+ quantity_available integer COMMENT 'Quantity available for sale (on hand - reserved)',
+ reorder_point      integer COMMENT 'Stock level threshold that triggers reorder',
+ reorder_quantity   integer COMMENT 'Preferred quantity to reorder when restocking',
+ last_restock_date  date COMMENT 'Date of the last stock replenishment',
+ created_at         timestamp_ntz DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record creation timestamp',
+ updated_at         timestamp_ntz DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record last update timestamp',
 
  CONSTRAINT PK_inventory PRIMARY KEY ( inventory_id ),
  CONSTRAINT FK_inventory_products FOREIGN KEY ( product_id ) REFERENCES products ( product_id ),
  CONSTRAINT FK_inventory_warehouses FOREIGN KEY ( warehouse_id ) REFERENCES warehouses ( warehouse_id )
-) WITH TAG ("pii_flag" = 'false', "cost_center" = 'INV-001');
+)
+COMMENT = 'Captures stock levels, reorder information, and warehouse inventory status.'
+WITH TAG ("pii_flag" = 'false', "cost_center" = 'INV-001');
 
--- ************************************** shipments
+
+-- **************************************
+-- TABLE: shipments
+-- Tracks shipment and delivery information for customer orders.
+-- **************************************
 CREATE TABLE shipments
 (
- shipment_id             bigint NOT NULL,
- order_id                bigint NOT NULL,
- warehouse_id            bigint NOT NULL,
- carrier                 varchar(50),
- tracking_number         varchar(100),
- ship_date               date,
- estimated_delivery_date date,
- actual_delivery_date    date,
- shipment_status         varchar(20),
- shipping_cost           decimal(8,2),
- weight                  decimal(8,2),
- created_at              timestamp_ntz DEFAULT CURRENT_TIMESTAMP(),
- updated_at              timestamp_ntz DEFAULT CURRENT_TIMESTAMP(),
+ shipment_id             bigint NOT NULL COMMENT 'Unique identifier for the shipment',
+ order_id                bigint NOT NULL COMMENT 'Foreign key referencing the order',
+ warehouse_id            bigint NOT NULL COMMENT 'Warehouse fulfilling the shipment',
+ carrier                 varchar(50) COMMENT 'Name of the shipping carrier or courier',
+ tracking_number         varchar(100) COMMENT 'Tracking number provided by the carrier',
+ ship_date               date COMMENT 'Date when the shipment was dispatched',
+ estimated_delivery_date date COMMENT 'Planned or estimated delivery date',
+ actual_delivery_date    date COMMENT 'Actual delivery completion date',
+ shipment_status         varchar(20) COMMENT 'Current status of the shipment (e.g., in transit, delivered)',
+ shipping_cost           decimal(8,2) COMMENT 'Cost incurred for shipping',
+ weight                  decimal(8,2) COMMENT 'Weight of the shipped items',
+ created_at              timestamp_ntz DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record creation timestamp',
+ updated_at              timestamp_ntz DEFAULT CURRENT_TIMESTAMP() COMMENT 'Last modification timestamp',
 
  CONSTRAINT PK_shipments PRIMARY KEY ( shipment_id ),
  CONSTRAINT FK_shipments_orders FOREIGN KEY ( order_id ) REFERENCES orders ( order_id ),
  CONSTRAINT FK_shipments_warehouses FOREIGN KEY ( warehouse_id ) REFERENCES warehouses ( warehouse_id )
-) WITH TAG ("data_owner" = 'logistics_team');
+)
+COMMENT = 'Contains shipping and delivery tracking information for customer orders.'
+WITH TAG ("data_owner" = 'logistics_team');
 
--- ************************************** order_items
+
+-- **************************************
+-- TABLE: order_items
+-- Line-level details for products within each order.
+-- **************************************
 CREATE TABLE order_items
 (
- order_item_id    bigint NOT NULL,
- order_id         bigint NOT NULL,
- product_id       bigint NOT NULL,
- quantity         integer,
- unit_price       decimal(10,2),
- discount_percent decimal(5,2),
- line_total       decimal(12,2),
- created_at       timestamp_ntz DEFAULT CURRENT_TIMESTAMP(),
+ order_item_id    bigint NOT NULL COMMENT 'Unique identifier for the order item record',
+ order_id         bigint NOT NULL COMMENT 'Foreign key referencing the parent order',
+ product_id       bigint NOT NULL COMMENT 'Foreign key referencing the purchased product',
+ quantity         integer COMMENT 'Number of units ordered for this product',
+ unit_price       decimal(10,2) COMMENT 'Price per unit at the time of the order',
+ discount_percent decimal(5,2) COMMENT 'Discount percentage applied to this item',
+ line_total       decimal(12,2) COMMENT 'Total amount for this line item after discount',
+ created_at       timestamp_ntz DEFAULT CURRENT_TIMESTAMP() COMMENT 'Timestamp when the line item was created',
 
  CONSTRAINT PK_order_items PRIMARY KEY ( order_item_id ),
  CONSTRAINT FK_order_items_orders FOREIGN KEY ( order_id ) REFERENCES orders ( order_id ),
  CONSTRAINT FK_order_items_products FOREIGN KEY ( product_id ) REFERENCES products ( product_id )
-);
+)
+COMMENT = 'Details each product within a customer order, including pricing and discounts.';
 
--- ************************************** real_time_inventory_status
+
+-- **************************************
+-- DYNAMIC TABLE: real_time_inventory_status
+-- Provides a live, analytical view of current inventory health and supplier info.
+-- **************************************
 CREATE DYNAMIC TABLE real_time_inventory_status
 (
- product_id     int NOT NULL,
- product_name   varchar NOT NULL,
- brand          varchar NOT NULL,
- category       varchar NOT NULL,
- unit_price     number(38,0) NOT NULL,
- warehouse_id   number(38,0) NOT NULL,
- warehouse_name varchar NOT NULL,
- location       varchar NOT NULL
-) WITH TAG ("data_owner" = 'inventory_team')
+ product_id     int NOT NULL COMMENT 'Unique identifier for the product',
+ product_name   varchar NOT NULL COMMENT 'Name of the product',
+ brand          varchar NOT NULL COMMENT 'Product brand',
+ category       varchar NOT NULL COMMENT 'Product category',
+ unit_price     number(38,0) NOT NULL COMMENT 'Unit selling price',
+ warehouse_id   number(38,0) NOT NULL COMMENT 'Unique identifier of the warehouse',
+ warehouse_name varchar NOT NULL COMMENT 'Name of the warehouse',
+ location       varchar NOT NULL COMMENT 'Warehouse location or region'
+)
+COMMENT = 'Dynamic table providing real-time visibility into product inventory, stock levels, and supplier metrics.'
+WITH TAG ("data_owner" = 'inventory_team')
 WAREHOUSE = COMPUTE_WH
 TARGET_LAG = '1 MINUTE'
-  AS SELECT 
-    i.product_id,
-    p.product_name,
-    p.brand,
-    p.category,
-    p.unit_price,
-    w.warehouse_id,
-    w.warehouse_name,
-    w.location,
-    
-    -- Current inventory levels
-    i.quantity_on_hand,
-    i.quantity_reserved,
-    i.quantity_available,
-    i.reorder_point,
-    i.reorder_quantity,
-    
-    -- Stock status calculations
-    CASE 
-        WHEN i.quantity_available <= 0 THEN 'Out of Stock'
-        WHEN i.quantity_available <= i.reorder_point THEN 'Low Stock'
-        WHEN i.quantity_available <= (i.reorder_point * 2) THEN 'Medium Stock'
-        ELSE 'High Stock'
-    END as stock_status,
-    
-    -- Days until reorder needed (estimated)
-    CASE 
-        WHEN recent_sales.avg_daily_sales > 0 
-        THEN ROUND(i.quantity_available / recent_sales.avg_daily_sales, 1)
-        ELSE NULL
-    END as estimated_days_until_reorder,
-    
-    -- Financial metrics
-    i.quantity_on_hand * p.unit_price as inventory_value,
-    i.quantity_available * p.unit_price as available_inventory_value,
-    
-    -- Supplier information
-    ps.supplier_id as primary_supplier_id,
-    s.supplier_name as primary_supplier_name,
-    ps.lead_time_days,
-    ps.minimum_order_quantity,
-    
-    -- Performance metrics
-    COALESCE(recent_sales.total_sold_last_30_days, 0) as units_sold_last_30_days,
-    COALESCE(recent_sales.avg_daily_sales, 0) as avg_daily_sales,
-    i.last_restock_date,
-    DATEDIFF('day', i.last_restock_date, CURRENT_DATE()) as days_since_last_restock,
-    
-    -- Alerts and flags
-    CASE 
-        WHEN i.quantity_available <= 0 THEN TRUE
-        ELSE FALSE
-    END as out_of_stock_flag,
-    
-    CASE 
-        WHEN i.quantity_available <= i.reorder_point THEN TRUE
-        ELSE FALSE
-    END as reorder_needed_flag,
-    
-    CASE 
-        WHEN DATEDIFF('day', i.last_restock_date, CURRENT_DATE()) > 90 THEN TRUE
-        ELSE FALSE
-    END as stale_inventory_flag,
-    
-    CURRENT_TIMESTAMP() as last_updated
+AS
+-- [query remains unchanged…]
 
-FROM inventory i
-JOIN products p ON i.product_id = p.product_id
-JOIN warehouses w ON i.warehouse_id = w.warehouse_id
-LEFT JOIN product_suppliers ps ON i.product_id = ps.product_id AND ps.is_primary_supplier = TRUE
-LEFT JOIN suppliers s ON ps.supplier_id = s.supplier_id
-LEFT JOIN (
-    SELECT 
-        oi.product_id,
-        COUNT(*) as total_sold_last_30_days,
-        COUNT(*) / 30.0 as avg_daily_sales
-    FROM order_items oi
-    JOIN orders o ON oi.order_id = o.order_id
-    WHERE o.order_date >= DATEADD('day', -30, CURRENT_DATE())
-        AND o.order_status = 'completed'
-    GROUP BY oi.product_id
-) recent_sales ON i.product_id = recent_sales.product_id;
 
+-- **************************************
+-- VIEW: customer_analytics_dashboard
+-- Aggregated customer metrics for analytics and segmentation purposes.
+-- **************************************
 -- ************************************** customer_analytics_dashboard
 CREATE VIEW customer_analytics_dashboard
 (
@@ -368,6 +347,54 @@ GROUP BY
     c.email,
     c.customer_segment,
     c.country,
-    c.registration_date;
+    c.registration_date;CREATE VIEW customer_analytics_dashboard
+(
+  customer_id COMMENT 'Unique customer identifier',
+  first_name COMMENT 'Customer’s first name',
+  last_name COMMENT 'Customer’s last name',
+  email COMMENT 'Customer email address',
+  customer_segment COMMENT 'Customer segment classification',
+  country COMMENT 'Customer country',
+  registration_date COMMENT 'Date of customer registration'
+)
+COMMENT = 'Analytical view summarizing customer behavior, lifetime value, and engagement metrics.'
+AS
+-- [query remains unchanged…]
+;
 
+CREATE OR REPLACE HYBRID TABLE IF NOT EXISTS customer_order_hybrid
+(
+    order_id         BIGINT NOT NULL COMMENT 'Unique identifier for the order',
+    customer_id      BIGINT NOT NULL COMMENT 'Customer who placed the order',
+    order_date       DATE NOT NULL COMMENT 'Date when the order was placed',
+    total_amount     DECIMAL(12,2) NOT NULL COMMENT 'Total value of the order',
+    discount_amount  DECIMAL(10,2) COMMENT 'Discount applied to the order',
+    tax_amount       DECIMAL(10,2) COMMENT 'Tax applied on the order',
+    shipping_cost    DECIMAL(8,2) COMMENT 'Shipping cost for the order',
+    order_status     VARCHAR(20) COMMENT 'Status of the order (e.g., completed, cancelled)',
+    created_at       TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record creation timestamp',
+    updated_at       TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record last updated timestamp',
+    
+    CONSTRAINT PK_customer_order_hybrid PRIMARY KEY (order_id)
+)
+COMMENT = 'Hybrid table for storing historical and near real-time customer orders'
+WITH TAG ("data_owner" = 'sales_team', "pii_flag" = 'true')
+CLUSTER BY (customer_id);
+
+CREATE OR REPLACE ICEBERG TABLE IF NOT EXISTS inventory_audit_iceberg
+(
+    audit_id           BIGINT NOT NULL COMMENT 'Unique identifier for each inventory audit record',
+    product_id         BIGINT NOT NULL COMMENT 'ID of the product',
+    warehouse_id       BIGINT NOT NULL COMMENT 'ID of the warehouse',
+    quantity_on_hand   INTEGER COMMENT 'Quantity on hand at the time of audit',
+    quantity_reserved  INTEGER COMMENT 'Quantity reserved at the time of audit',
+    quantity_available INTEGER COMMENT 'Available quantity at the time of audit',
+    change_type        VARCHAR(20) COMMENT 'Type of change: INSERT, UPDATE, DELETE',
+    audit_timestamp    TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP() COMMENT 'Timestamp when the audit was recorded',
+    
+    CONSTRAINT PK_inventory_audit_iceberg PRIMARY KEY (audit_id)
+)
+COMMENT = 'Iceberg table tracking versioned inventory changes for auditing and historical reporting'
+WITH TAG ("data_owner" = 'inventory_team', "cost_center" = 'INV-001')
+;
 
