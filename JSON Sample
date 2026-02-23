@@ -1,0 +1,186 @@
+{
+  "table_name": "enterprise_master_data",
+  "description": "Comprehensive enterprise data table containing customer, product, supplier, financial, and transactional attributes.",
+  "columns": [
+    {
+      "column_name": "customer_id",
+      "category": "customer",
+      "data_type": "string",
+      "definition": "Unique identifier assigned to each customer."
+    },
+    {
+      "column_name": "customer_name",
+      "category": "customer",
+      "data_type": "string",
+      "definition": "Full legal name of the customer or registered business name."
+    },
+    {
+      "column_name": "customer_type",
+      "category": "customer",
+      "data_type": "string",
+      "definition": "Classification of customer (e.g., retail, wholesale, enterprise)."
+    },
+    {
+      "column_name": "customer_segment",
+      "category": "customer",
+      "data_type": "string",
+      "definition": "Market segment grouping used for reporting and targeting."
+    },
+    {
+      "column_name": "customer_country",
+      "category": "customer",
+      "data_type": "string",
+      "definition": "Country where the customer is registered or operates."
+    },
+    {
+      "column_name": "product_id",
+      "category": "product",
+      "data_type": "string",
+      "definition": "Unique identifier assigned to each product."
+    },
+    {
+      "column_name": "product_name",
+      "category": "product",
+      "data_type": "string",
+      "definition": "Commercial name of the product."
+    },
+    {
+      "column_name": "product_category",
+      "category": "product",
+      "data_type": "string",
+      "definition": "High-level classification of the product."
+    },
+    {
+      "column_name": "product_subcategory",
+      "category": "product",
+      "data_type": "string",
+      "definition": "Detailed classification within the main product category."
+    },
+    {
+      "column_name": "product_price",
+      "category": "product",
+      "data_type": "decimal",
+      "definition": "Standard selling price per unit of the product."
+    },
+    {
+      "column_name": "supplier_id",
+      "category": "supplier",
+      "data_type": "string",
+      "definition": "Unique identifier assigned to each supplier."
+    },
+    {
+      "column_name": "supplier_name",
+      "category": "supplier",
+      "data_type": "string",
+      "definition": "Registered name of the supplier organization."
+    },
+    {
+      "column_name": "supplier_country",
+      "category": "supplier",
+      "data_type": "string",
+      "definition": "Country where the supplier operates."
+    },
+    {
+      "column_name": "supplier_rating",
+      "category": "supplier",
+      "data_type": "integer",
+      "definition": "Performance rating assigned based on quality and reliability metrics."
+    },
+    {
+      "column_name": "supplier_status",
+      "category": "supplier",
+      "data_type": "string",
+      "definition": "Current operational status of the supplier (e.g., active, inactive, suspended)."
+    },
+    {
+      "column_name": "order_id",
+      "category": "order",
+      "data_type": "string",
+      "definition": "Unique identifier assigned to each customer order."
+    },
+    {
+      "column_name": "order_date",
+      "category": "order",
+      "data_type": "date",
+      "definition": "Date on which the order was placed."
+    },
+    {
+      "column_name": "order_status",
+      "category": "order",
+      "data_type": "string",
+      "definition": "Current status of the order (e.g., pending, shipped, completed, cancelled)."
+    },
+    {
+      "column_name": "order_quantity",
+      "category": "order",
+      "data_type": "integer",
+      "definition": "Total quantity of products ordered."
+    },
+    {
+      "column_name": "order_total_amount",
+      "category": "finance",
+      "data_type": "decimal",
+      "definition": "Total monetary value of the order before tax and discounts."
+    },
+    {
+      "column_name": "invoice_id",
+      "category": "finance",
+      "data_type": "string",
+      "definition": "Unique identifier for the invoice generated for the order."
+    },
+    {
+      "column_name": "invoice_date",
+      "category": "finance",
+      "data_type": "date",
+      "definition": "Date on which the invoice was issued."
+    },
+    {
+      "column_name": "payment_status",
+      "category": "finance",
+      "data_type": "string",
+      "definition": "Indicates whether payment has been received, is pending, or overdue."
+    },
+    {
+      "column_name": "payment_method",
+      "category": "finance",
+      "data_type": "string",
+      "definition": "Method used for payment (e.g., credit card, bank transfer, cash)."
+    },
+    {
+      "column_name": "tax_amount",
+      "category": "finance",
+      "data_type": "decimal",
+      "definition": "Total tax applied to the order."
+    },
+    {
+      "column_name": "discount_amount",
+      "category": "finance",
+      "data_type": "decimal",
+      "definition": "Total discount applied to the order."
+    },
+    {
+      "column_name": "shipping_id",
+      "category": "logistics",
+      "data_type": "string",
+      "definition": "Unique identifier assigned to the shipment."
+    },
+    {
+      "column_name": "shipping_method",
+      "category": "logistics",
+      "data_type": "string",
+      "definition": "Method used to deliver the order (e.g., air, ground, sea)."
+    },
+    {
+      "column_name": "shipping_date",
+      "category": "logistics",
+      "data_type": "date",
+      "definition": "Date on which the order was shipped."
+    },
+    {
+      "column_name": "delivery_date",
+      "category": "logistics",
+      "data_type": "date",
+      "definition": "Date on which the order was delivered to the customer."
+    }
+  ]
+}
