@@ -1,0 +1,140 @@
+{
+  "customers": [
+    {
+      "_id": { "$oid": "660000000000000000000001" },
+      "profile": {
+        "firstName": "Ajay",
+        "lastName": "Singh",
+        "email": "ajay@example.com",
+        "phone": "+1-760-555-1234"
+      },
+      "addresses": [
+        {
+          "type": "home",
+          "isDefault": true,
+          "location": {
+            "street": "123 Main St",
+            "city": "Carlsbad",
+            "state": "CA",
+            "zip": "92008",
+            "country": "USA"
+          }
+        }
+      ],
+      "loyalty": {
+        "points": 320,
+        "tier": "silver"
+      },
+      "status": "active",
+      "audit": {
+        "createdAt": { "$date": "2026-01-10T10:00:00Z" }
+      }
+    }
+  ],
+
+  "products": [
+    {
+      "_id": { "$oid": "660000000000000000000201" },
+      "sku": "CLN-SPRAY-001",
+      "name": "Multi-Surface Cleaning Spray",
+      "category": {
+        "level1": "Home Supplies",
+        "level2": "Cleaning",
+        "level3": "Sprays"
+      },
+      "brand": "Clean Green",
+      "pricing": {
+        "mrp": 6.99,
+        "sellingPrice": 5.99,
+        "currency": "USD"
+      },
+      "inventory": {
+        "stock": 150,
+        "warehouseId": "WH-CA-01"
+      },
+      "status": "active"
+    }
+  ],
+
+  "warehouses": [
+    {
+      "_id": "WH-CA-01",
+      "name": "California Warehouse",
+      "location": {
+        "city": "Los Angeles",
+        "state": "CA",
+        "country": "USA"
+      },
+      "capacity": {
+        "maxUnits": 10000,
+        "currentUnits": 4500
+      },
+      "status": "operational"
+    }
+  ],
+
+  "orders": [
+    {
+      "_id": { "$oid": "660000000000000000000101" },
+      "orderNumber": "ORD-2026-0001",
+
+      "customer": {
+        "customerId": { "$oid": "660000000000000000000001" },
+        "snapshot": {
+          "name": "Ajay Singh",
+          "email": "ajay@example.com"
+        }
+      },
+
+      "items": [
+        {
+          "productId": { "$oid": "660000000000000000000201" },
+          "sku": "CLN-SPRAY-001",
+          "name": "Multi-Surface Cleaning Spray",
+          "quantity": 2,
+          "pricing": {
+            "unitPrice": 5.99,
+            "finalPrice": 5.99
+          }
+        }
+      ],
+
+      "pricingSummary": {
+        "subtotal": 11.98,
+        "tax": 1.05,
+        "shipping": 3.99,
+        "total": 17.02
+      },
+
+      "payment": {
+        "method": "card",
+        "status": "paid",
+        "transactionId": "txn_987654321"
+      },
+
+      "fulfillment": {
+        "status": "shipped",
+        "warehouseId": "WH-CA-01",
+        "tracking": {
+          "carrier": "UPS",
+          "trackingNumber": "1Z999AA10123456784"
+        }
+      },
+
+      "statusHistory": [
+        {
+          "status": "created",
+          "timestamp": { "$date": "2026-03-22T10:00:00Z" }
+        },
+        {
+          "status": "paid",
+          "timestamp": { "$date": "2026-03-22T10:05:00Z" }
+        },
+        {
+          "status": "shipped",
+          "timestamp": { "$date": "2026-03-23T09:00:00Z" }
+        }
+      ]
+    }
+  ]
+}
