@@ -1,0 +1,106 @@
+{
+  "tables": {
+    "EINA": ["INFNR", "MATNR", "LIFNR"],
+    "EINE": ["INFNR", "EKORG", "NETPR", "WAERS"],
+    "LFA1": ["LIFNR", "NAME1", "ORT01", "LAND1"],
+    "MARA": ["MATNR", "ERSDA", "ERNAM", "MTART", "MEINS"],
+    "MAKT": ["MATNR", "SPRAS", "MAKTX"],
+    "MARC": ["MATNR", "WERKS", "DISPO"],
+    "T023": ["MATKL", "WGBEZ"],
+    "MKPF": ["MBLNR", "BUDAT", "USNAM"],
+    "MSEG": ["MBLNR", "ZEILE", "MATNR", "MENGE"],
+    "T006": ["MSEHI", "MSEHL"],
+    "EKPO": ["EBELN", "EBELP", "MATNR", "MENGE", "NETWR"],
+    "EKBE": ["EBELN", "EBELP", "BEWTP", "DMBTR", "BUDAT"],
+    "KNA1": ["KUNNR", "NAME1", "LAND1", "ORT01"],
+    "KNVV": ["KUNNR", "VKORG", "VTWEG", "SPART"],
+    "VBAK": ["VBELN", "AUART", "VKORG", "ERDAT"],
+    "VBAP": ["VBELN", "POSNR", "MATNR", "KWMENG"],
+    "VBRK": ["VBELN", "FKDAT", "KUNAG", "NETWR"],
+    "VBRP": ["VBELN", "POSNR", "MATNR", "FKIMG"],
+    "T001": ["BUKRS", "BUTXT", "LAND1"]
+  },
+
+  "relationships": [
+    {
+      "from": "EINA.LIFNR",
+      "to": "LFA1.LIFNR",
+      "type": "Vendor Info"
+    },
+    {
+      "from": "EINA.INFNR",
+      "to": "EINE.INFNR",
+      "type": "Info Record Details"
+    },
+    {
+      "from": "EINA.MATNR",
+      "to": "MARA.MATNR",
+      "type": "Material Info"
+    },
+    {
+      "from": "MARA.MATNR",
+      "to": "MAKT.MATNR",
+      "type": "Material Description"
+    },
+    {
+      "from": "MARA.MATNR",
+      "to": "MARC.MATNR",
+      "type": "Plant Data"
+    },
+    {
+      "from": "MARA.MATNR",
+      "to": "MSEG.MATNR",
+      "type": "Material Movements"
+    },
+    {
+      "from": "MKPF.MBLNR",
+      "to": "MSEG.MBLNR",
+      "type": "Document Header-Item"
+    },
+    {
+      "from": "MSEG.MATNR",
+      "to": "VBAP.MATNR",
+      "type": "Sales Material"
+    },
+    {
+      "from": "T006.MSEHI",
+      "to": "MSEG.MENGE",
+      "type": "Unit of Measure"
+    },
+    {
+      "from": "EKPO.EBELN",
+      "to": "EKBE.EBELN",
+      "type": "PO History"
+    },
+    {
+      "from": "KNA1.KUNNR",
+      "to": "KNVV.KUNNR",
+      "type": "Customer Master"
+    },
+    {
+      "from": "KNA1.KUNNR",
+      "to": "VBRK.KUNAG",
+      "type": "Customer Billing"
+    },
+    {
+      "from": "VBAK.VBELN",
+      "to": "VBAP.VBELN",
+      "type": "Sales Items"
+    },
+    {
+      "from": "VBRK.VBELN",
+      "to": "VBRP.VBELN",
+      "type": "Billing Items"
+    }
+  ],
+
+  "description": {
+    "domain": "SAP ERP (MM + SD integration)",
+    "modules": [
+      "MM (Materials Management)",
+      "SD (Sales and Distribution)"
+    ],
+    "fact_tables": ["MSEG", "VBAP", "VBRP", "EKPO"],
+    "dimension_tables": ["MARA", "MAKT", "LFA1", "KNA1"]
+  }
+}
